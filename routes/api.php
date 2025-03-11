@@ -2,14 +2,16 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\DashbordController;
 
-Route::post('/v1/admin/register', [AdminAuthController::class, 'register']);
-Route::post('/v1/admin/login', [AdminAuthController::class, 'login']);
-Route::post('/v1/admin/logout', [AdminAuthController::class, 'logout']);
+Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
+Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
+Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
 
-Route::middleware('auth:sanctum')->get('/v1/admin/dashboard', function (Request $request) {
-    return response()->json(['message' => 'Dashboard data']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/v1/admin/dashboard', [DashbordController::class, 'index'])->name('admin.dashboard');
 });
 
 Route::get('/login', function () {

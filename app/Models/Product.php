@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Notifications\StockNotification;
+use Illuminate\Support\Facades\Notification;
+
 use App\Models\User;
 use App\Models\Category;
 
@@ -20,4 +23,16 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    
+    protected static function boot()
+        {
+            parent::boot();
+
+            static::updated(function ($product) {
+                if ($product->stock <= 1) { 
+                    $admins = User::role('super_admin')->get(); 
+                    Notification::send($admins, new StockNotification($product));
+                }
+            });
+        }
 }
