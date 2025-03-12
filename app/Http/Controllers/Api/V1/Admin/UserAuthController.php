@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Http\Controllers\Controller;
 
 class UserAuthController extends Controller
 {

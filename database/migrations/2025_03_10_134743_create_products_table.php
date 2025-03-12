@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('status', ['available', 'out_of_stock']);
             $table->foreignId('category_id')->constrained();
             $table->timestamps();
-            $table->softDeletes(); // Pour soft delete
+            $table->softDeletes();
         });
     }
     
