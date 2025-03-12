@@ -7,11 +7,11 @@ use App\Http\Controllers\DashbordController;
 
 Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
 Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
-Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/admin/dashboard', [DashbordController::class, 'index'])->name('admin.dashboard');
+    Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
 });
 
 Route::get('/login', function () {
