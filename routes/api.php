@@ -23,10 +23,10 @@ Route::get('/login', function () {
     return response()->json(['message' => 'Please login'], 401);
 })->name('login');
 
-Route::get('/user', function (Request $request) {
-    return ['message' => 'Hello world'];
-});
+// Route::get('/user', function (Request $request) {
+//     return ['message' => 'Hello world'];
+// });
 
-Route::get('/v1/status', function (Request $request) {
-    return response()->json(['status' => 'OK']);
-});
+// Route::get('/v1/status', function (Request $request) {
+//     return response()->json(['status' => 'OK']);
+// });
