@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
-    use RefreshDatabase;
+    // use RefreshDatabase;
 
    public function test_admin_can_create_and_list_category(): void
     {
@@ -19,6 +19,8 @@ class CategoryTest extends TestCase
             ['email' => 'admin@gmail.com'],
             ['name' => 'Admin', 'password' => bcrypt('password')]
         );
+
+        $admin->assignRole('product_manager');
         
         // Authenticate as admin
         $this->actingAs($admin);
@@ -48,6 +50,7 @@ class CategoryTest extends TestCase
         ['email' => 'admin@gmail.com'],
         ['name' => 'Admin', 'password' => bcrypt('password')]
     );
+    $admin->assignRole('product_manager');
     $this->actingAs($admin);
 
     $category = Category::create([
@@ -71,6 +74,7 @@ class CategoryTest extends TestCase
             ['email' => 'admin@gmail.com'],
             ['name' => 'Admin', 'password' => bcrypt('password')]
         );
+        $admin->assignRole('product_manager');
         $this->actingAs($admin);
 
         $category = Category::create([

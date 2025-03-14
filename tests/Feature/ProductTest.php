@@ -7,46 +7,53 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
-    use RefreshDatabase;
+    // use RefreshDatabase;
+
+
 
     public function test_admin_can_create_and_list_product(): void
-    {
-        // Create an admin user if it doesn't exist
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
-            ['name' => 'Admin', 'password' => bcrypt('password')]
-        );
-        
-        // Authenticate as admin
-        $this->actingAs($admin);
-    
-        // Create a category
-        $category = Category::create([
-            'name' => 'Test Category',
-            'slug' => 'test-category',
-        ]);
-    
-        // Create products
-        $products = Product::factory()->count(10)->create([
-            'category_id' => $category->id,
-        ]);
-    
-        // Count the number of products in the database
-        $productsCount = Product::count();
-    
-          // Make request to fetch products
-          $response = $this->getJson('/api/v1/admin/products');
-    
-          // Check the response status
-          $response->assertStatus(200);
-      
-          // Assert that the response contains the correct number of products
-          $response->assertJsonCount($productsCount);
-    }
+{
+    // Create an admin user if it doesn't exist
+    $admin = User::firstOrCreate(
+        ['email' => 'admin@gmail.com'],
+        ['name' => 'Admin', 'password' => bcrypt('password')]
+    );
+
+    // Assign the necessary role to the admin user
+    $admin->assignRole('super_admin');
+
+    // Authenticate as admin
+    $this->actingAs($admin);
+
+    // Create a category
+    $category = Category::create([
+        'name' => 'Test1 Category',
+        'slug' => 'test1-category',
+    ]);
+
+    // Create products
+    $products = Product::factory()->count(10)->create([
+        'category_id' => $category->id,
+    ]);
+
+    // Count the number of products in the database
+    $productsCount = Product::count();
+
+    // Make request to fetch products
+    $response = $this->getJson('/api/v1/admin/products');
+
+    // Check the response status
+    $response->assertStatus(200);
+
+    // Assert that the response contains the correct number of products
+    $response->assertJsonCount($productsCount);
+}
 
 
         public function test_admin_can_update_product(): void
@@ -55,11 +62,14 @@ class ProductTest extends TestCase
                 ['email' => 'admin@gmail.com'],
                 ['name' => 'Admin', 'password' => bcrypt('password')]
             );
+
+            $admin->assignRole('super_admin');
+
             $this->actingAs($admin);
 
             $category = Category::create([
-                'name' => 'Test Category',
-                'slug' => 'test-category',
+                'name' => 'Test4 Category',
+                'slug' => 'test6-category',
             ]);
 
             $product = Product::create([
@@ -89,11 +99,12 @@ class ProductTest extends TestCase
                 ['email' => 'admin@gmail.com'],
                 ['name' => 'Admin', 'password' => bcrypt('password')]
             );
+        $admin->assignRole('super_admin');
             $this->actingAs($admin);
 
             $category = Category::create([
-                'name' => 'Test Category',
-                'slug' => 'test-category',
+                'name' => 'Test6 Category',
+                'slug' => 'test9-category',
             ]);
 
             $product = Product::create([

@@ -10,7 +10,7 @@ class RolePermissionSeeder extends Seeder
 {
     public function run()
     {
-        // Liste des permissions
+        // List of permissions
         $permissions = [
             'view_dashboard',
             'view_products', 'create_products', 'edit_products', 'delete_products',
@@ -18,19 +18,18 @@ class RolePermissionSeeder extends Seeder
             'view_users', 'create_users', 'edit_users', 'delete_users',
         ];
 
-        // Création des permissions
+        // Create permissions
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Création des rôles et assignation des permissions
+        // Create roles and assign permissions
         $superAdmin = Role::firstOrCreate(['name' => 'super_admin']);
         $superAdmin->givePermissionTo(Permission::all());
 
         $productManager = Role::firstOrCreate(['name' => 'product_manager']);
         $productManager->givePermissionTo([
             'view_products', 'create_products', 'edit_products', 'delete_products',
-            'view_categories', 'create_categories', 'edit_categories', 'delete_categories',
         ]);
 
         $userManager = Role::firstOrCreate(['name' => 'user_manager']);
