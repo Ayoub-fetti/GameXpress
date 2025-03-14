@@ -47,7 +47,7 @@ class UserAuthController extends Controller
             ]);
         }
         
-        if (!$user->hasRole('super_admin')) {
+        if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
             return response()->json(['message' => 'You do not have permission to login'], 403);
         }
 

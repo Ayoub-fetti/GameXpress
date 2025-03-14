@@ -16,7 +16,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
 });
 
-Route::middleware('role:super-admin|user-manager')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v1/admin/users', [UserController::class, 'index']);
     Route::post('/v1/admin/users', [UserController::class, 'store']);
     Route::get('/v1/admin/users/{id}', [UserController::class, 'show']);
@@ -24,8 +24,7 @@ Route::middleware('role:super-admin|user-manager')->group(function () {
     Route::delete('/v1/admin/users/{id}', [UserController::class, 'destroy']);
 });
 
-    Route::middleware('role:super-admin|product-manager')->prefix('v1/admin')->group(function () {
-    // Route::middleware(['auth:sanctum'])->prefix('v1/admin')->group(function () {
+    Route::middleware(['auth:sanctum'])->prefix('v1/admin')->group(function () {
         Route::apiResource('products', ProductController::class);
         Route::apiResource('categories', CategoryController::class);
     });
