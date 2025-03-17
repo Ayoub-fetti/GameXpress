@@ -31,6 +31,14 @@ class CartHelper
     }
 
 
+    
+    public static function applyDiscount(Cart $cart, float $amount): Cart
+    {
+        $cart->discount_amount = $amount;
+        return self::calculateCartTotals($cart);
+    }
+
+
     public static function updateCartItemTotal(CartItem $item): CartItem
     {
         $item->total_price = $item->quantity * $item->unit_price;
@@ -42,5 +50,10 @@ class CartHelper
     }
 
 
-  
+    public static function setTaxRate(Cart $cart, float $rate): Cart
+    {
+        $cart->tax_rate = $rate;
+        return self::calculateCartTotals($cart);
+    }
+
 }
