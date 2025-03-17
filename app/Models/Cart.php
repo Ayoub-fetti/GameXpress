@@ -2,33 +2,46 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Cart extends Model
 {
-    //
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'session_id',
+        'total_amount',
+        'expires_at'
+    ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
+
+    public function items()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function updateTotalAmount()
+    {
+        $this->total_amount = $this->items->sum('total_price');
+        $this->save();
+
+        return $this;
+    }
+
+    public function isExpired()
+    {
+        return $this->expires_at && Carbon::now()->greaterThan($this->expires_at);
+    }
 }
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-return new class extends Migration
-{
-    public function up()
-    {
-        Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('session_id')->nullable();
-            $table->decimal('total_amount', 10, 2)->default(0);
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
-        });
-    }
-
-    public function down()
-    {
-        Schema::dropIfExists('carts');
-    }
-};
