@@ -46,7 +46,7 @@ class UserAuthController extends Controller
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-        
+
         if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
             return response()->json(['message' => 'You do not have permission to login'], 403);
         }
