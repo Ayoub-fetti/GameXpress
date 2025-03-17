@@ -7,11 +7,11 @@ use App\Models\CartItem;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
+
+
 class CartHelper
 {
-    /**
-     * Calculate all cart totals including tax and discounts
-     */
+
     public static function calculateCartTotals(Cart $cart): Cart
     {
 
@@ -19,14 +19,18 @@ class CartHelper
             return $item->quantity * $item->unit_price;
         });
 
+        $priceAfterDiscount = $cart->subtotal - $cart->discount_amount;
+
+        $cart->tax_amount = $priceAfterDiscount * ($cart->tax_rate / 100);
+
+        $cart->total_amount = $priceAfterDiscount + $cart->tax_amount;
+
         $cart->save();
 
         return $cart;
     }
 
-    /**
-     * Update cart item total price
-     */
+
     public static function updateCartItemTotal(CartItem $item): CartItem
     {
         $item->total_price = $item->quantity * $item->unit_price;
@@ -38,11 +42,5 @@ class CartHelper
     }
 
 
-    /**
-     * Format the price with currency symbol
-     */
-    public static function formatPrice(float $amount): string
-    {
-        return number_format($amount, 2) . ' MAD';
-    }
-} 
+  
+}
