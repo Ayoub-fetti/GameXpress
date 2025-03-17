@@ -8,13 +8,14 @@ use App\Http\Controllers\Api\V1\Admin\ProductController;
 use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\RoleController;
+use App\Http\Controllers\Api\V1\CartController;
 
 Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
 Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
-    
+
     Route::middleware('role:super_admin|user_manager|product_manager')->group(function () {
         Route::get('/v1/admin/dashboard', [DashbordController::class, 'index'])->name('admin.dashboard');
     });
@@ -31,6 +32,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('categories', CategoryController::class);
     });
 });
+
+Route::prefix('cart')->group(function() {
+        Route::get('/', [CartController::class, 'index']);
+        Route::post('/add', [CartController::class, 'addToCart']);
+
+});
+
+
+
 
 Route::get('/login', function () {
     return response()->json(['message' => 'Please login'], 401);
