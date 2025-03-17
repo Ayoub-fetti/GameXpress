@@ -36,5 +36,9 @@ class RolePermissionSeeder extends Seeder
         $userManager->givePermissionTo([
             'view_users', 'create_users', 'edit_users', 'delete_users',
         ]);
+        $user = Role::firstOrCreate(['name' => 'user']);
+        $user->givePermissionTo([
+            'view_dashboard', 'view_products','',
+        ]);
     }
 }
