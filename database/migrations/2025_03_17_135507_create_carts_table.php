@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('session_id')->nullable();
-            $table->decimal('total_amount', 10, 2)->default(0);
+            $table->decimal('subtotal', 10, 2)->default(0.00);
+            $table->decimal('tax_rate', 5, 2)->default(20.00); 
+            $table->decimal('tax_amount', 10, 2)->default(0.00);
+            $table->decimal('discount_amount', 10, 2)->default(0.00);
+            $table->decimal('total_amount', 10, 2)->default(0.00);
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });
