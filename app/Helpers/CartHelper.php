@@ -4,6 +4,8 @@ namespace App\Helpers;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\PromoCode;
+use App\Models\PromoCodeUsage;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -34,12 +36,12 @@ class CartHelper
     }
 
 
+
     public static function setTaxRate(Cart $cart, float $rate): Cart
     {
         $cart->tax_rate = $rate;
         return self::calculateCartTotals($cart);
     }
-
 
     public static function updateCartItemTotal(CartItem $item): CartItem
     {
@@ -51,12 +53,10 @@ class CartHelper
         return $item;
     }
 
-
     public static function isCartExpired(Cart $cart): bool
     {
         return $cart->expires_at && Carbon::now()->greaterThan($cart->expires_at);
     }
-
 
     public static function getCartTotals(Cart $cart): array
     {
