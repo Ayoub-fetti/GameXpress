@@ -68,7 +68,7 @@ class CartController extends Controller
                 'tax_rate' => self::TAX_RATE
             ]);
         }
-        
+
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
@@ -162,5 +162,99 @@ class CartController extends Controller
 
         return response()->json($result);
     }
+
+    public function updateCartItem(Request $request): JsonResponse
+    {
+        $request->validate([
+            'cart_item_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        if (Auth::check()) {
+            $cart = Cart::where('user_id', Auth::id())->first();
+        } else {
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required'
+                ], 400);
+            }
+            $cart = Cart::where('session_id', $sessionId)->first();
+        }
+
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found'
+            ], 404);
+        }
+
+        $cartItem = CartItem::where('id', $request->cart_item_id)
+            ->where('cart_id', $cart->id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found'
+            ], 404);
+        }
+
+        $product = Product::find($cartItem->product_id);
+        if ($request->quantity > $product->stock) {
+            return response()->json([
+                'message' => 'Not enough stock available',
+                'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
+            ], 400);
+        }
+
+        $cartItem->quantity = $request->quantity;
+        CartHelper::updateCartItemTotal($cartItem);
+        CartHelper::calculateCartTotals($cart);
+
+        return response()->json([
+            'message' => 'Cart item updated successfully',
+            'cart_item' => $cartItem,
+            'totals' => CartHelper::getCartTotals($cart)
+        ], 200);
+    }
+
+    public function removeCartItem($id, Request $request): JsonResponse
+    {
+        if (Auth::check()) {
+            $cart = Cart::where('user_id', Auth::id())->first();
+        } else {
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required'
+                ], 400);
+            }
+            $cart = Cart::where('session_id', $sessionId)->first();
+        }
+
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found'
+            ], 404);
+        }
+
+        $cartItem = CartItem::where('id', $id)
+            ->where('cart_id', $cart->id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found'
+            ], 404);
+        }
+
+        $cartItem->delete();
+        CartHelper::calculateCartTotals($cart);
+
+        return response()->json([
+            'message' => 'Cart item removed successfully',
+            'totals' => CartHelper::getCartTotals($cart)
+        ], 200);
+    }
+
 }
 
