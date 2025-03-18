@@ -56,4 +56,15 @@ class CartHelper
         return self::calculateCartTotals($cart);
     }
 
+        public static function getCartTotals(Cart $cart): array
+        {
+            return [
+                'subtotal' => round($cart->subtotal, 2),
+                'discount' => round($cart->discount_amount, 2),
+                'price_after_discount' => round($cart->subtotal - $cart->discount_amount, 2),
+                'tax_rate' => round($cart->tax_rate, 2),
+                'tax' => round($cart->tax_amount, 2),
+                'total' => round($cart->total_amount, 2),
+            ];
+        }
 }
