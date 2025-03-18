@@ -92,9 +92,6 @@ class UserAuthController extends Controller
         }
 
         // hna ghadi ndir assign l permissions
-        // if ($request->has('permissions')) {
-        //     $user->syncPermissions($request->permissions);
-        // }
         
         if ($request->has('permissions')) {
             $permissions = array_keys(array_filter($request->permissions));
