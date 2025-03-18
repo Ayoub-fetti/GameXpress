@@ -78,6 +78,9 @@ class UserAuthController extends Controller
 
     public function assignRolesAndPermissions(Request $request, $userId)
     {
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'roles' => 'array',
             'roles.*' => 'string|exists:roles,name',
@@ -86,12 +89,11 @@ class UserAuthController extends Controller
         ]);
         $user = User::findOrFail($userId);
 
-        // hna ghadi ndir assign Role 
+
         if ($request->has('roles')) {
             $user->syncRoles($request->roles);
         }
 
-        // hna ghadi ndir assign l permissions
         
         if ($request->has('permissions')) {
             $permissions = array_keys(array_filter($request->permissions));

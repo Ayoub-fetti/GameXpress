@@ -7,6 +7,7 @@ skinparam class {
     BorderColor DarkGreen
     ArrowColor DarkGreen
 }
+
 class User {
   - id: int
   - name: string
@@ -78,12 +79,42 @@ class UserRole {
   - role_id: int
 }
 
-User "1" -- "*" UserRole
-Role "1" -- "*" UserRole
-Role "1" -- "*" RolePermission
-Permission "1" -- "*" RolePermission
-Category "1" -- "*" Product
-Product "1" -- "*" ProductImage
-User "1" -- "*" Product
+class Order {
+  - id: int
+  - user_id: int
+  - total_price: decimal
+  - status: string
+  - created_at: timestamp
+  - updated_at: timestamp
+  + createOrder()
+  + updateOrder()
+  + cancelOrder()
+}
 
-@enduml 
+class OrderItem {
+  - id: int
+  - order_id: int
+  - product_id: int
+  - quantity: int
+  - price: decimal
+}
+
+class Checkout {
+  + processPayment()
+  + validateOrder()
+  + generateInvoice()
+}
+
+User "  1  " -- " *  " UserRole
+Role "  1  " -- " * " UserRole
+Role "  1  " -- " *  " RolePermission
+Permission "  1  " -- " * " RolePermission
+Category "  1  " -- " * " Product
+Product "  1  " --* " * " ProductImage
+User "  1  " -- " * " Product
+User "  1  " -- " * " Order
+Order "  1  " -- " * " OrderItem
+OrderItem " * " -- "  1  " Product
+Checkout ..> Order
+
+@enduml
