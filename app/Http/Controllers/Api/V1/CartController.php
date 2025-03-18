@@ -10,9 +10,18 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
+    private function getOrCreateSessionId(Request $request)
+    {
+        $sessionId = $request->header('X-Session-Id');
+        if (!$sessionId) {
+            $sessionId = Str::random(32);
+        }
+        return $sessionId;
+    }
 
     public function index()
     {
@@ -36,13 +45,17 @@ class CartController extends Controller
         }
 
         if ($request->quantity > $product->stock) {
-
+            return response()->json([
+                'message' => 'Not enough stock available',
+                'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
+            ], 400);
         }
 
         if (Auth::check()) {
             $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         } else {
-            $cart = Cart::firstOrCreate(['session_id' => Session::getId()]);
+            $sessionId = $this->getOrCreateSessionId($request);
+            $cart = Cart::firstOrCreate(['session_id' => $sessionId]);
         }
         
         $cartItem = CartItem::where('cart_id', $cart->id)
@@ -69,18 +82,30 @@ class CartController extends Controller
             ]);
         }
 
-        return response()->json([
+        $response = [
             'message' => 'Product added to cart successfully',
             'cart_item' => $cartItem,
-        ], 201);
+        ];
+
+        if (!Auth::check()) {
+            $response['session_id'] = $sessionId;
+        }
+
+        return response()->json($response, 201);
     }
 
-    public function getCart(): JsonResponse
+    public function getCart(Request $request): JsonResponse
     {
         if (Auth::check()) {
             $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
         } else {
-            $cart = Cart::with('items.product')->where('session_id', Session::getId())->first();
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required',
+                ], 400);
+            }
+            $cart = Cart::with('items.product')->where('session_id', $sessionId)->first();
         }
 
         if (!$cart) {
