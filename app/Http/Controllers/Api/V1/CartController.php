@@ -51,13 +51,11 @@ class CartController extends Controller
             ], 400);
         }
 
-        if (Auth::check()) {
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-        } else {
+
             $sessionId = $this->getOrCreateSessionId($request);
             $cart = Cart::firstOrCreate(['session_id' => $sessionId]);
-        }
-        
+
+
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
