@@ -15,6 +15,7 @@ Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
+    Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
 
 
     Route::middleware('role:super_admin')->group(function () {
@@ -40,9 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('cart')->group(function() {
-        Route::get('/', [CartController::class, 'index']);
-        Route::post('/add', [CartController::class, 'addToCart']);
-        Route::get('/show', [CartController::class, 'getCart']);
+    Route::get('/', [CartController::class, 'index']);
+    Route::post('/add', [CartController::class, 'addToCart']);
+    Route::get('/show', [CartController::class, 'getCart']);
+    
 });
 
 
