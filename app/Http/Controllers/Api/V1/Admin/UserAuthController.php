@@ -89,12 +89,11 @@ class UserAuthController extends Controller
         ]);
         $user = User::findOrFail($userId);
 
-        // hna ghadi ndir assign Role 
+
         if ($request->has('roles')) {
             $user->syncRoles($request->roles);
         }
 
-        // hna ghadi ndir assign l permissions
         
         if ($request->has('permissions')) {
             $permissions = array_keys(array_filter($request->permissions));
