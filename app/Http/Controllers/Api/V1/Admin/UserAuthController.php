@@ -26,7 +26,7 @@ class UserAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $role = Role::findByName('super_admin');
+        $role = Role::findByName('user');
         $user->assignRole($role);
 
         return response()->json(['message' => 'User registered successfully'], 201);
@@ -47,9 +47,15 @@ class UserAuthController extends Controller
             ]);
         }
 
+        if ($user->hasAnyRole(['user'])) {
+            return response()->json(['message' => 'login success to user'], 200);
+        }
+
         if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
             return response()->json(['message' => 'You do not have permission to login'], 403);
         }
+
+
 
         $token = $user->createToken('user-token')->plainTextToken;
 
