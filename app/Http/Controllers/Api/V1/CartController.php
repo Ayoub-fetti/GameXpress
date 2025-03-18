@@ -10,9 +10,18 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
+    private function getOrCreateSessionId(Request $request)
+    {
+        $sessionId = $request->header('X-Session-Id');
+        if (!$sessionId) {
+            $sessionId = Str::random(32);
+        }
+        return $sessionId;
+    }
 
     public function index()
     {
@@ -135,9 +144,33 @@ class CartController extends Controller
         return response()->json($response, 201);
     }
 
-    public function getCart()
+    public function getCart(Request $request): JsonResponse
     {
-    //
+        if (Auth::check()) {
+            $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        } else {
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required',
+                ], 400);
+            }
+            $cart = Cart::with('items.product')->where('session_id', $sessionId)->first();
+        }
+
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found',
+            ], 404);
+        }
+
+        $cartTotals = \App\Helpers\CartHelper::getCartTotals($cart);
+
+        return response()->json([
+            'cart' => $cart,
+            'items' => $cart->items,
+            'totals' => $cartTotals
+        ], 200);
     }
 
     public function updateCartItem(Request $request)
@@ -149,102 +182,5 @@ class CartController extends Controller
     public function removeCartItem(Request $request)
     {
 
-    }
-
-    private function getOrCreateSessionId(Request $request)
-    {
-        // Check if session_id is provided in the request
-        if ($request->has('session_id')) {
-            return $request->session_id;
-        }
-        
-        // If no session_id provided, use the current session ID or create a new one
-        if (!Session::has('cart_session_id')) {
-            Session::put('cart_session_id', Session::getId());
-        }
-        
-        return Session::get('cart_session_id');
-    }
-    public function addToCartClient(Request $request): JsonResponse{
-
-        $request->validate([
-            'product_id' => 'required|integer',
-            'quantity' => 'required|integer|min:1',
-        ]);
-        $product = Product::find($request->product_id);
-
-        if (!$product) {
-            return response()->json([
-                'message' => 'Product not found',
-                'errors' => ['product_id' => ['The selected product does not exist.']]
-            ], 404);
-        }
-        
-        if ($request->quantity > $product->stock) {
-            return response()->json([
-                'message' => 'Not enough stock available',
-                'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
-            ], 400);
-        }
-        
-        if (Auth::check()) {
-            // Utilisateur authentifié - stocker dans la base de données
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-            
-            // Vérifier si le produit est déjà dans le panier
-            $cartItem = CartItem::where('cart_id', $cart->id)
-                ->where('product_id', $product->id)
-                ->first();
-            
-            if ($cartItem) {
-                // Mettre à jour la quantité si le produit existe déjà
-                $cartItem->quantity += $request->quantity;
-                $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
-                $cartItem->save();
-            } else {
-                // Ajouter un nouvel article au panier
-                $cartItem = CartItem::create([
-                    'cart_id' => $cart->id,
-                    'product_id' => $product->id,
-                    'quantity' => $request->quantity,
-                    'unit_price' => $product->price,
-                    'total_price' => $request->quantity * $product->price,
-                ]);
-            }
-        
-            return response()->json([
-                'message' => 'Product added to cart successfully you are login',
-                'cart_item' => $cartItem,
-            ], 201);
-        } else {
-            // Utilisateur non authentifié - stocker dans la session
-            $cart = Cart::firstOrCreate(['session_id' => Session::getId()]);
-            
-            // Vérifier si le produit est déjà dans le panier
-            $cartItem = CartItem::where('cart_id', $cart->id)
-                ->where('product_id', $product->id)
-                ->first();
-            
-            if ($cartItem) {
-                // Mettre à jour la quantité si le produit existe déjà
-                $cartItem->quantity += $request->quantity;
-                $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
-                $cartItem->save();
-            } else {
-                // Ajouter un nouvel article au panier
-                $cartItem = CartItem::create([
-                    'cart_id' => $cart->id,
-                    'product_id' => $product->id,
-                    'quantity' => $request->quantity,
-                    'unit_price' => $product->price,
-                    'total_price' => $request->quantity * $product->price,
-                ]);
-            }
-        
-            return response()->json([
-                'message' => 'Product added to cart successfully',
-                'cart_item' => $cartItem,
-            ], 201);
-        }
     }
 }
