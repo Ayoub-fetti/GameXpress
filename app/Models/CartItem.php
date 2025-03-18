@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartItem extends Model
 {
@@ -17,6 +18,11 @@ class CartItem extends Model
         'total_price'
     ];
 
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'total_price' => 'decimal:2',
+    ];
+
     public function cart()
     {
         return $this->belongsTo(Cart::class);
@@ -25,13 +31,5 @@ class CartItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function updateTotalPrice()
-    {
-        $this->total_price = $this->quantity * $this->unit_price;
-        $this->save();
-
-        return $this;
     }
 }

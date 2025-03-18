@@ -48,7 +48,11 @@ class UserAuthController extends Controller
         }
 
         if ($user->hasAnyRole(['user'])) {
-            return response()->json(['message' => 'login success to user'], 200);
+            $token = $user->createToken('user-token')->plainTextToken;
+            return response()->json([
+            'message' => 'login success to user',
+            'token' => $token
+            ], 200);
         }
 
         if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
@@ -71,6 +75,35 @@ class UserAuthController extends Controller
 
         return response()->json(['message' => 'No authenticated user'], 401);
     }
+
+    public function assignRolesAndPermissions(Request $request, $userId)
+    {
+        $request->validate([
+            'roles' => 'array',
+            'roles.*' => 'string|exists:roles,name',
+            'permessions' => 'array',
+            'permissions.*' => 'boolean',
+        ]);
+        $user = User::findOrFail($userId);
+
+        // hna ghadi ndir assign Role 
+        if ($request->has('roles')) {
+            $user->syncRoles($request->roles);
+        }
+
+        // hna ghadi ndir assign l permissions
+        // if ($request->has('permissions')) {
+        //     $user->syncPermissions($request->permissions);
+        // }
+        
+        if ($request->has('permissions')) {
+            $permissions = array_keys(array_filter($request->permissions));
+            $user->syncPermissions($permissions);
+        }
+
+        return response()->json(['message' => 'Roles and permissions assigned successfully'], 200);
+    }
+
 
 
 }
