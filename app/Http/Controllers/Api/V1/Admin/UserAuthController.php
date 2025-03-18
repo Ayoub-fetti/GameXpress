@@ -78,6 +78,9 @@ class UserAuthController extends Controller
 
     public function assignRolesAndPermissions(Request $request, $userId)
     {
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'roles' => 'array',
             'roles.*' => 'string|exists:roles,name',
