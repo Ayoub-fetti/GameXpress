@@ -72,9 +72,27 @@ class CartController extends Controller
         ], 201);
     }
 
-    public function getCart()
+    public function getCart(): JsonResponse
     {
-    //
+        if (Auth::check()) {
+            $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        } else {
+            $cart = Cart::with('items.product')->where('session_id', Session::getId())->first();
+        }
+
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found',
+            ], 404);
+        }
+
+        $cartTotals = \App\Helpers\CartHelper::getCartTotals($cart);
+
+        return response()->json([
+            'cart' => $cart,
+            'items' => $cart->items,
+            'totals' => $cartTotals
+        ], 200);
     }
 
     public function updateCartItem(Request $request)

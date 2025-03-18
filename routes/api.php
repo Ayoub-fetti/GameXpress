@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('cart')->group(function() {
         Route::get('/', [CartController::class, 'index']);
         Route::post('/add', [CartController::class, 'addToCart']);
-
+        Route::get('/show', [CartController::class, 'getCart']);
 });
 
 
