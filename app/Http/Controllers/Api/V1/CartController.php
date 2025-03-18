@@ -10,9 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use App\Helpers\CartHelper;
 
 class CartController extends Controller
 {
+    private const TAX_RATE = 20;
+
+    private function getOrCreateSessionId(Request $request)
+    {
+        $sessionId = $request->header('X-Session-Id');
+        if (!$sessionId) {
+            $sessionId = Str::random(32);
+        }
+        return $sessionId;
+    }
 
     public function index()
     {
@@ -23,7 +35,7 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|integer',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1'
         ]);
 
         $product = Product::find($request->product_id);
@@ -43,19 +55,33 @@ class CartController extends Controller
         }
 
         if (Auth::check()) {
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+            $cart = Cart::firstOrCreate([
+                'user_id' => Auth::id()
+            ], [
+                'tax_rate' => self::TAX_RATE
+            ]);
         } else {
-            $cart = Cart::firstOrCreate(['session_id' => Session::getId()]);
+            $sessionId = $this->getOrCreateSessionId($request);
+            $cart = Cart::firstOrCreate([
+                'session_id' => $sessionId
+            ], [
+                'tax_rate' => self::TAX_RATE
+            ]);
         }
+        
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
 
         if ($cartItem) {
-            return response()->json([
-                'message' => 'Product already in cart',
-                'errors' => ['product_id' => ['The selected product is already in cart.']]
-            ], 400);
+            if (($cartItem->quantity + $request->quantity) > $product->stock) {
+                return response()->json([
+                    'message' => 'Not enough stock available',
+                    'errors' => ['quantity' => ['The total quantity would exceed available stock.']]
+                ], 400);
+            }
+            $cartItem->quantity += $request->quantity;
+            CartHelper::updateCartItemTotal($cartItem);
         } else {
             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
@@ -66,25 +92,75 @@ class CartController extends Controller
             ]);
         }
 
-        return response()->json([
+        CartHelper::calculateCartTotals($cart);
+
+        $response = [
             'message' => 'Product added to cart successfully',
             'cart_item' => $cartItem,
-        ], 201);
+            'cart_totals' => CartHelper::getCartTotals($cart)
+        ];
+
+        if (!Auth::check()) {
+            $response['session_id'] = $sessionId;
+        }
+
+        return response()->json($response, 201);
     }
 
-    public function getCart()
+    public function getCart(Request $request): JsonResponse
     {
-    //
+        if (Auth::check()) {
+            $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        } else {
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required',
+                ], 400);
+            }
+            $cart = Cart::with('items.product')->where('session_id', $sessionId)->first();
+        }
+
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'cart' => $cart,
+            'items' => $cart->items,
+            'totals' => CartHelper::getCartTotals($cart)
+        ], 200);
     }
 
-    public function updateCartItem(Request $request)
+    public function applyPromoCode(Request $request): JsonResponse
     {
+        $request->validate([
+            'code' => 'required|string'
+        ]);
 
-    }
+        if (Auth::check()) {
+            $cart = Cart::where('user_id', Auth::id())->first();
+        } else {
+            $sessionId = $request->header('X-Session-Id');
+            if (!$sessionId) {
+                return response()->json([
+                    'message' => 'Session ID is required'
+                ], 400);
+            }
+            $cart = Cart::where('session_id', $sessionId)->first();
+        }
 
+        if (!$cart) {
+            return response()->json([
+                'message' => 'Cart not found'
+            ], 404);
+        }
 
-    public function removeCartItem(Request $request)
-    {
+        $result = CartHelper::applyPromoCode($cart, $request->code);
 
+        return response()->json($result);
     }
 }
+
