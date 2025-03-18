@@ -36,10 +36,7 @@ class CartController extends Controller
         }
 
         if ($request->quantity > $product->stock) {
-            return response()->json([
-                'message' => 'Not enough stock available',
-                'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
-            ], 400);
+
         }
 
         if (Auth::check()) {
@@ -47,15 +44,21 @@ class CartController extends Controller
         } else {
             $cart = Cart::firstOrCreate(['session_id' => Session::getId()]);
         }
+        
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
 
         if ($cartItem) {
-            return response()->json([
-                'message' => 'Product already in cart',
-                'errors' => ['product_id' => ['The selected product is already in cart.']]
-            ], 400);
+            if (($cartItem->quantity + $request->quantity) > $product->stock) {
+                return response()->json([
+                    'message' => 'Not enough stock available',
+                    'errors' => ['quantity' => ['The total quantity would exceed available stock.']]
+                ], 400);
+            }
+            $cartItem->quantity += $request->quantity;
+            $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
+            $cartItem->save();
         } else {
             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
