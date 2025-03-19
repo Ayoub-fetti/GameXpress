@@ -279,20 +279,26 @@ class CartController extends Controller
         
         if (Auth::check()) {
             
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+            $cart = Cart::firstOrCreate([
+                'user_id' => Auth::id()
+            ], [
+                'tax_rate' => self::TAX_RATE
+            ]);
             
-          
             $cartItem = CartItem::where('cart_id', $cart->id)
                 ->where('product_id', $product->id)
                 ->first();
             
             if ($cartItem) {
-                
+                if (($cartItem->quantity + $request->quantity) > $product->stock) {
+                    return response()->json([
+                        'message' => 'Not enough stock available',
+                        'errors' => ['quantity' => ['The total quantity would exceed available stock.']]
+                    ], 400);
+                }
                 $cartItem->quantity += $request->quantity;
-                $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
-                $cartItem->save();
+                CartHelper::updateCartItemTotal($cartItem);
             } else {
-                
                 $cartItem = CartItem::create([
                     'cart_id' => $cart->id,
                     'product_id' => $product->id,
@@ -301,17 +307,20 @@ class CartController extends Controller
                     'total_price' => $request->quantity * $product->price,
                 ]);
             }
+
+            CartHelper::calculateCartTotals($cart);
         
             return response()->json([
                 'message' => 'Product added to cart successfully you are login',
                 'cart_item' => $cartItem,
+                'cart_totals' => CartHelper::getCartTotals($cart)
             ], 201);
-        } else {
-            return response()->json([
-                'message' => 'User not authenticated',
-                'errors' => ['auth' => ['You must be logged in to add items to your cart.']]
-            ], 401);
         }
+        
+        return response()->json([
+            'message' => 'User not authenticated',
+            'errors' => ['auth' => ['You must be logged in to add items to your cart.']]
+        ], 401);
     }
     public function mergeCartAfterLogin(Request $request): JsonResponse
 {
