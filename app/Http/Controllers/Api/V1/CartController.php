@@ -304,31 +304,56 @@ public function mergeCartAfterLogin(Request $request): JsonResponse
         // 'totals' => $cartTotals
     ], 200);
 }
-public function mergeGuestCart($sessionId, $user_id){
-    $cartItemsGuest = Cart::where('session_id', $sessionId)->get();
-    $cartItemsUser = Cart::where('user_id', $user_id)->get();
-    foreach ($cartItemsGuest as $cartItemGuest) {
-        //verifier si le produit existe dans le panier de l'utilisateur
-        $cartItemUser = $cartItemsUser->where('product_id', $cartItemGuest->product_id)->first();
-        if ($cartItemUser) {
-            $cartItemUser->quantity += $cartItemGuest->quantity;
-            if($cartItemUser->quantity > Product::find($cartItemUser->product_id)->stock){
-                return response()->json(['message' => 'stock insuffisant', 'status' => 'error'], 400);
-            }
-            $cartItemUser->price = $cartItemUser->quantity * Product::find($cartItemUser->product_id)->price;
-            $cartItemUser->save();
-            $cartItemGuest->delete();
-            $cartItemGuest->user_id = $user_id;
-            $cartItemGuest->session_id = null;
-            $cartItemGuest->save();
-
-        } else {
-            $cartItemGuest->user_id = $user_id;
-            $cartItemGuest->session_id = null;
-            $cartItemGuest->save();
+public function mergeGuestCart($sessionId, $userId)
+{
+   
+    $guestCart = Cart::where('session_id', $sessionId)->first();
+    
+    if (!$guestCart) {
+        return response()->json([
+            'message' => 'Panier invité non trouvé', 
+            'status' => 'error'
+        ], 404);
+    }
+    
+    $userCart = Cart::firstOrCreate(['user_id' => $userId]);
+    
+    $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
+    
+    if ($guestCartItems->isEmpty()) {
+        return response()->json([
+            'message' => 'Panier invité vide', 
+            'status' => 'info'
+        ], 200);
+    }
+    foreach ($guestCartItems as $guestItem) {
+        $userItem = CartItem::where('cart_id', $userCart->id)
+                           ->where('product_id', $guestItem->product_id)
+                           ->first();
+        
+        $product = Product::find($guestItem->product_id);
+        if (!$product) {
+            continue; 
+        }
+        if ($userItem) {
+            $newQuantity = $userItem->quantity + $guestItem->quantity;
+            // Vérifier le stock disponible
+            if ($newQuantity > $product->stock) {
+                $newQuantity = $product->stock; // Limiter à la quantité en stock
+            } 
+            $userItem->quantity = $newQuantity;
+            $userItem->total_price = $newQuantity * $userItem->unit_price;
+            $userItem->save();   
+            $guestItem->delete();
+        } else { 
+            $guestItem->cart_id = $userCart->id;
+            $guestItem->save();
         }
     }
-    return response()->json(['message' => 'panier fusionné avec succès', 'status' => 'success'], 200);
-
+    $guestCart->delete();
+    return response()->json([
+        'message' => 'Panier fusionné avec succès', 
+        'status' => 'success'
+    ], 200);
 }
 }
