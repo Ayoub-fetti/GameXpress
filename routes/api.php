@@ -49,11 +49,14 @@ Route::prefix('cart')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
-        
+        Route::post('/sentorder', [OrderController::class, 'createFromCart']);
     });
 });
 
 
+Route::prefix('orders')->group(function () {
+    Route::post('/sentorder', [OrderController::class, 'createFromCart']); 
+});
 
 Route::get('/login', function () {
     return response()->json(['message' => 'Please login'], 401);

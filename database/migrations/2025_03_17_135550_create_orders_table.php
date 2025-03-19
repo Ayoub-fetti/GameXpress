@@ -14,18 +14,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->string('guest_email')->nullable();
-            $table->string('guest_name')->nullable();
             $table->decimal('total_price', 10, 2);
             $table->enum('status', ['pending', 'processing', 'shipped', 'cancelled'])->default('pending');
             $table->decimal('tax_rate', 5, 2)->default(20.00);
             $table->decimal('tax_amount', 10, 2)->default(0.00);
             $table->decimal('discount_amount', 10, 2)->default(0.00);
-            $table->string('shipping_address');
-            $table->string('billing_address');
-            $table->string('payment_method');
-            $table->string('payment_status')->default('pending');
-            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
