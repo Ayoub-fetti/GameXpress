@@ -15,17 +15,17 @@ Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
-    
-    
+
+
     Route::middleware('role:super_admin')->group(function () {
         Route::post('/v1/admin/users/{userId}/assign-roles-permissions', [UserAuthController::class, 'assignRolesAndPermissions']);
     });
-    
+
     Route::middleware('role:super_admin|user_manager|product_manager')->group(function () {
         Route::get('/v1/admin/dashboard', [DashbordController::class, 'index'])->name('admin.dashboard');
     });
-    
-    
+
+
     Route::middleware('role:user_manager|super_admin')->group(function () {
         Route::get('/v1/admin/users', [UserController::class, 'index']);
         Route::post('/v1/admin/users', [UserController::class, 'store']);
@@ -39,15 +39,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('cart')->group(function() {
+Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
     Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);  
+        Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
     });
-    
 });
 
 
