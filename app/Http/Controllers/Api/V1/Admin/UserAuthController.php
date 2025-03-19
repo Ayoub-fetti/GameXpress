@@ -32,39 +32,81 @@ class UserAuthController extends Controller
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|string|email',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     $user = User::where('email', $request->email)->first();
+
+    //     if (! $user || ! Hash::check($request->password, $user->password)) {
+    //         throw ValidationException::withMessages([
+    //             'email' => ['The provided credentials are incorrect.'],
+    //         ]);
+    //     }
+
+    //     if ($user->hasAnyRole(['user'])) {
+    //         $token = $user->createToken('user-token')->plainTextToken;
+    //         return response()->json([
+    //         'message' => 'login success to user',
+    //         'token' => $token
+    //         ], 200);
+    //     }
+
+    //     if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
+    //         return response()->json(['message' => 'You do not have permission to login'], 403);
+    //     }
+
+
+
+    //     $token = $user->createToken('user-token')->plainTextToken;
+
+    //     return response()->json(['token' => $token], 200);
+    // }
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        if ($user->hasAnyRole(['user'])) {
-            $token = $user->createToken('user-token')->plainTextToken;
-            return response()->json([
-            'message' => 'login success to user',
-            'token' => $token
-            ], 200);
-        }
-
-        if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
-            return response()->json(['message' => 'You do not have permission to login'], 403);
-        }
-
-
-
-        $token = $user->createToken('user-token')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json([
+            'message' => 'Les identifiants fournis sont incorrects.',
+            'errors' => ['email' => ['Les identifiants fournis sont incorrects.']]
+        ], 401);
     }
+    
+    // Supprimer les anciens tokens (optionnel)
+    // $user->tokens()->delete();
+    
+    $token = $user->createToken('auth-token')->plainTextToken;
+    
+    $sessionId = $request->header('X-Session-Id');
+    $mergeResult = null;
+    
+
+    if ($sessionId) {
+
+        $cartController = new \App\Http\Controllers\Api\V1\CartController();
+        $mergeResult = $cartController->mergeGuestCart($sessionId, $user->id);
+    }
+    
+    return response()->json([
+        'message' => 'Connexion réussie',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email
+        ],
+        'token' => $token,
+        'merge_result' => $sessionId ? 'Fusion du panier tentée' : 'Aucun panier à fusionner'
+    ], 200);
+}
 
     public function logout(Request $request)
     {

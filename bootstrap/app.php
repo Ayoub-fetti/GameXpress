@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\RoleMiddleware;
 
@@ -23,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class
         ]);
         //
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('app:clean-expired-cart-items')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -39,17 +39,19 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('cart')->group(function() {
+Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
-    Route::post('/add', [CartController::class, 'addToCart']);
+    // Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
-    Route::post('/update', [CartController::class, 'updateCartItem']);
+    Route::put('/update', [CartController::class, 'updateCartItem']);
     Route::delete('remove-item/{id}', [CartController::class, 'removeCartItem']);
-
+    Route::post('/add', [CartController::class, 'addToCartGuest']);
+    
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
+        Route::post('/add-client', [CartController::class, 'addToCartClient']);
+        Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);
     });
-
 });
 
 

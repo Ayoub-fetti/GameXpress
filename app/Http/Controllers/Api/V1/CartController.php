@@ -31,7 +31,7 @@ class CartController extends Controller
         return response()->json(Product::all(),200);
     }
 
-    public function addToCart(Request $request): JsonResponse
+    public function addToCartGuest(Request $request): JsonResponse
     {
         $request->validate([
             'product_id' => 'required|integer',
@@ -255,6 +255,177 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
+    public function addToCartClient(Request $request): JsonResponse{
 
+        $request->validate([
+            'product_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1',
+        ]);
+        $product = Product::find($request->product_id);
+
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product not found',
+                'errors' => ['product_id' => ['The selected product does not exist.']]
+            ], 404);
+        }
+        
+        if ($request->quantity > $product->stock) {
+            return response()->json([
+                'message' => 'Not enough stock available',
+                'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
+            ], 400);
+        }
+        
+        if (Auth::check()) {
+            
+            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+            
+          
+            $cartItem = CartItem::where('cart_id', $cart->id)
+                ->where('product_id', $product->id)
+                ->first();
+            
+            if ($cartItem) {
+                
+                $cartItem->quantity += $request->quantity;
+                $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
+                $cartItem->save();
+            } else {
+                
+                $cartItem = CartItem::create([
+                    'cart_id' => $cart->id,
+                    'product_id' => $product->id,
+                    'quantity' => $request->quantity,
+                    'unit_price' => $product->price,
+                    'total_price' => $request->quantity * $product->price,
+                ]);
+            }
+        
+            return response()->json([
+                'message' => 'Product added to cart successfully you are login',
+                'cart_item' => $cartItem,
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'User not authenticated',
+                'errors' => ['auth' => ['You must be logged in to add items to your cart.']]
+            ], 401);
+        }
+    }
+    public function mergeCartAfterLogin(Request $request): JsonResponse
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'User not authenticated',
+        ], 401);
+    }
+
+    $sessionId = $request->header('X-Session-Id');
+    if (!$sessionId) {
+        return response()->json([
+            'message' => 'Session ID is required',
+        ], 400);
+    }
+    
+    $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
+    if (!$sessionCart) {
+        return response()->json([
+            'message' => 'Session cart not found',
+        ], 404);
+    }
+    
+    $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+    
+    foreach ($sessionCart->items as $sessionItem) {
+        $userItem = CartItem::where('cart_id', $userCart->id)
+                          ->where('product_id', $sessionItem->product_id)
+                          ->first();
+
+        if ($userItem) {
+            $newQuantity = $userItem->quantity + $sessionItem->quantity;
+            
+            if ($newQuantity <= $sessionItem->product->stock) {
+                $userItem->quantity = $newQuantity;
+                $userItem->total_price = $newQuantity * $userItem->unit_price;
+                $userItem->save();
+            } else {
+                $userItem->quantity = $sessionItem->product->stock;
+                $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
+                $userItem->save();
+            }
+            
+            $sessionItem->delete();
+        } else {
+            $sessionItem->cart_id = $userCart->id;
+            $sessionItem->save();
+        }
+    }
+
+    $sessionCart->delete();
+
+    $updatedCart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+    // $cartTotals = \App\Helpers\CartHelper::getCartTotals($updatedCart);
+
+    return response()->json([
+        'message' => 'Cart merged successfully',
+        'cart' => $updatedCart,
+        // 'items' => $updatedCart->items,
+        // 'totals' => $cartTotals
+    ], 200);
+}
+public function mergeGuestCart($sessionId, $userId)
+{
+   
+    $guestCart = Cart::where('session_id', $sessionId)->first();
+    
+    if (!$guestCart) {
+        return response()->json([
+            'message' => 'Panier invité non trouvé', 
+            'status' => 'error'
+        ], 404);
+    }
+    
+    $userCart = Cart::firstOrCreate(['user_id' => $userId]);
+    
+    $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
+    
+    if ($guestCartItems->isEmpty()) {
+        return response()->json([
+            'message' => 'Panier invité vide', 
+            'status' => 'info'
+        ], 200);
+    }
+    foreach ($guestCartItems as $guestItem) {
+        $userItem = CartItem::where('cart_id', $userCart->id)
+                           ->where('product_id', $guestItem->product_id)
+                           ->first();
+        
+        $product = Product::find($guestItem->product_id);
+        if (!$product) {
+            continue; 
+        }
+        if ($userItem) {
+            $newQuantity = $userItem->quantity + $guestItem->quantity;
+            // Vérifier le stock disponible
+            if ($newQuantity > $product->stock) {
+                $newQuantity = $product->stock; // Limiter à la quantité en stock
+            } 
+            $userItem->quantity = $newQuantity;
+            $userItem->total_price = $newQuantity * $userItem->unit_price;
+            $userItem->save();   
+            $guestItem->delete();
+        } else { 
+            $guestItem->cart_id = $userCart->id;
+            $guestItem->save();
+        }
+    }
+    $guestCart->delete();
+    return response()->json([
+        'message' => 'Panier fusionné avec succès', 
+        'status' => 'success'
+    ], 200);
 }
 
+
+}
