@@ -49,6 +49,7 @@ Route::prefix('cart')->group(function () {
     Route::post('/add', [CartController::class, 'addToCartGuest']);
     
     Route::middleware('auth:sanctum')->group(function () {
+        // Route::get('/show', [CartController::class, 'getCart']);
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
         Route::post('/add-client', [CartController::class, 'addToCartClient']);
         Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);

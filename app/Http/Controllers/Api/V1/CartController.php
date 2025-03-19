@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use App\Helpers\CartHelper;
+use Laravel\Sanctum\Sanctum;
 
 class CartController extends Controller
 {
@@ -109,10 +110,12 @@ class CartController extends Controller
 
     public function getCart(Request $request): JsonResponse
     {
-        if (Auth::check()) {
-            $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        if (Auth::guard('sanctum')->check()) {
+            $cart = Cart::with('items.product')->where('user_id', Auth::guard('sanctum')->id())->first();
+            // dd(Auth::guard('sanctum')->id());
         } else {
             $sessionId = $request->header('X-Session-Id');
+            // dd($sessionId);
             if (!$sessionId) {
                 return response()->json([
                     'message' => 'Session ID is required',
@@ -290,15 +293,11 @@ class CartController extends Controller
                 ->first();
 
             if ($cartItem) {
-                if (($cartItem->quantity + $request->quantity) > $product->stock) {
-                    return response()->json([
-                        'message' => 'Not enough stock available',
-                        'errors' => ['quantity' => ['The total quantity would exceed available stock.']]
-                    ], 400);
-                }
+                
                 $cartItem->quantity += $request->quantity;
                 CartHelper::updateCartItemTotal($cartItem);
             } else {
+                
                 $cartItem = CartItem::create([
                     'cart_id' => $cart->id,
                     'product_id' => $product->id,
