@@ -43,6 +43,8 @@ Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
     Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
+    Route::put('/update', [CartController::class, 'updateCartItem']);
+    Route::delete('remove-item/{id}', [CartController::class, 'removeCartItem']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
