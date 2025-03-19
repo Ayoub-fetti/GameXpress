@@ -1,0 +1,89 @@
+@startuml  gamexpress
+hide circle
+
+skinparam classAttributeIconSize 0
+
+skinparam class {
+    BorderColor DarkGreen
+    ArrowColor DarkGreen
+}
+class User {
+  - id: int
+  - name: string
+  - email: string
+  - password: string
+  - email_verified_at: timestamp
+  - remember_token: string
+  - timestamps: timestamp
+  - deleted_at: timestamp
+  + register()
+  + login()
+  + logout()
+  + AddUser()
+  + updateUser()
+  + DeleteUser()
+}
+
+class Category {
+  - id: int
+  - name: string
+  - slug: string
+  - parent_id: int
+  - timestamps: timestamp
+  + store()
+  + update()
+  + delete()
+}
+
+class Product {
+  - id: int
+  - name: string
+  - slug: string
+  - price: decimal
+  - stock: int
+  - status: string
+  - category_id: int
+  - timestamps: timestamp
+  - deleted_at: timestamp
+  + store()
+  + update()
+  + delete()
+}
+
+class ProductImage {
+  - id: int
+  - product_id: int
+  - image_url: string
+  - is_primary: bool
+  - timestamps: timestamp
+}
+
+class Role {
+  - id: int
+  - name: string
+}
+
+class Permission {
+  - id: int
+  - name: string
+}
+
+class RolePermission {
+  - role_id: int
+  - permission_id: int
+}
+
+class UserRole {
+  - user_id: int
+  - role_id: int
+}
+
+User "1" -- "*" UserRole
+Role "1" -- "*" UserRole
+Role "1" -- "*" RolePermission
+Permission "1" -- "*" RolePermission
+Category "1" -- "*" Product
+Product "1" -- "*" ProductImage
+User "1" -- "*" Product
+
+@enduml 
