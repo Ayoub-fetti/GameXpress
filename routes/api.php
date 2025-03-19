@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Admin\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\RoleController;
 use App\Http\Controllers\Api\V1\CartController;
+use App\Http\Controllers\Api\V1\OrderController;
 
 Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
 Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
@@ -48,9 +49,9 @@ Route::prefix('cart')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
+        
     });
 });
-
 
 
 
