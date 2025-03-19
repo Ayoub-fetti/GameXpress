@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Http\Controllers\Api\V1\CartController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +27,7 @@ class UserAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $role = Role::findByName('user');
+        $role = Role::findByName('user_manager');
         $user->assignRole($role);
 
         return response()->json(['message' => 'User registered successfully'], 201);
@@ -46,24 +47,20 @@ class UserAuthController extends Controller
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-
-        if ($user->hasAnyRole(['user'])) {
-            $token = $user->createToken('user-token')->plainTextToken;
-            return response()->json([
-            'message' => 'login success to user',
-            'token' => $token
-            ], 200);
-        }
-
+        
         if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
             return response()->json(['message' => 'You do not have permission to login'], 403);
         }
 
-
-
         $token = $user->createToken('user-token')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
+        $sessionId = $request->header('X-Session-ID');
+        // if ($sessionId) {
+        //     $stockController = new CartController();
+        //     $stockController->mergeGuestCart($sessionId, $user->id);
+        // }
+        return response()->json(['message' => 'login succ' ,
+                                "seesionId" => $sessionId,
+                                'token' => $token], 200);
     }
 
     public function logout(Request $request)
@@ -75,32 +72,6 @@ class UserAuthController extends Controller
 
         return response()->json(['message' => 'No authenticated user'], 401);
     }
-
-    public function assignRolesAndPermissions(Request $request, $userId)
-    {
-        $request->validate([
-            'roles' => 'array',
-            'roles.*' => 'string|exists:roles,name',
-            'permessions' => 'array',
-            'permissions.*' => 'boolean',
-        ]);
-        $user = User::findOrFail($userId);
-
-        // hna ghadi ndir assign Role 
-        if ($request->has('roles')) {
-            $user->syncRoles($request->roles);
-        }
-
-        // hna ghadi ndir assign l permissions
-        
-        if ($request->has('permissions')) {
-            $permissions = array_keys(array_filter($request->permissions));
-            $user->syncPermissions($permissions);
-        }
-
-        return response()->json(['message' => 'Roles and permissions assigned successfully'], 200);
-    }
-
 
 
 }
