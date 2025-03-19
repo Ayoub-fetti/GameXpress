@@ -5,88 +5,63 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
+use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
 
 
 
-    public function createSession(Request $request)
-{
-    // Configurez votre clé secrète Stripe
-    Stripe::setApiKey(env('STRIPE_SECRET'));
 
-    // Récupérer le panier
-    $cartController = new CartController();
-    $cartResponse = $cartController->getCart($request);
-    $cartData = $cartResponse->getData();
+    public function createSession()
+    {
+        
+        // Configurez votre clé secrète Stripe
+        
+        Stripe::setApiKey(env('STRIPE_SECRET')); 
 
-    if ($cartResponse->getStatusCode() !== 200) {
-        return response()->json([
-            'message' => 'Unable to retrieve cart: ' . $cartData->message
-        ], $cartResponse->getStatusCode());
-    }
+    
 
-    $cart = $cartData->cart;
+        // Récupérer la commande
+        $order = Order::where('user_id', Auth::id()) // Ensure the order belongs to the authenticated user
+        ->first();
 
-    // Appliquer le code promo si fourni
-    if ($request->has('promo_code')) {
-        $promoResponse = $cartController->applyPromoCode($request);
-        $promoData = $promoResponse->getData();
+        // dd($order);
 
-        if (!$promoData->success) {
+        if (!$order) {
             return response()->json([
-                'message' => $promoData->message
-            ], 400);
+                'message' => 'Order not found'
+            ], 404);
         }
-
-        $cart = $promoData->cart_totals;
-    }
-
-    // Créer les items Stripe à partir des articles du panier
-    $lineItems = [];
-    foreach ($cart->items as $item) {
-        $lineItems[] = [
-            'price_data' => [
-                'currency' => 'MAD',
-                'product_data' => [
-                    'name' => $item->product->name,
+        // Créer les items Stripe à partir de la commande
+        $lineItems = [
+            [
+                'price_data' => [
+                    'currency' => 'MAD',
+                    'product_data' => [
+                        'name' => 'Order #' . $order->id,
+                    ],
+                    'unit_amount' => $order->total_price * 100, // Convertir en centimes
                 ],
-                'unit_amount' => $item->unit_price * 100, // Convertir en centimes
-            ],
-            'quantity' => $item->quantity,
+                'quantity' => 1,
+            ]
         ];
+
+        // Créer une session Stripe
+
+            $session = Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $lineItems,
+                'mode' => 'payment',
+                'success_url' => env('APP_URL') . '/success',
+                'cancel_url' => env('APP_URL') . '/cancel',
+            ]);
+            // Retourner l'ID de session et l'URL de redirection
+            return response()->json([
+                'id' => $session->id,
+                'url' => $session->url, // URL de redirection vers Stripe Checkout
+            ]);
     }
-
-    // Ajouter une ligne pour la remise si applicable
-    if ($cart->discount_amount > 0) {
-        $lineItems[] = [
-            'price_data' => [
-                'currency' => 'MAD',
-                'product_data' => [
-                    'name' => 'Discount',
-                ],
-                'unit_amount' => -$cart->discount_amount * 100, // Remise en centimes
-            ],
-            'quantity' => 1,
-        ];
-    }
-
-    // Créer une session Stripe
-    $session = Session::create([
-        'payment_method_types' => ['card'],
-        'line_items' => $lineItems,
-        'mode' => 'payment',
-        'success_url' => env('APP_URL') . '/success',
-        'cancel_url' => env('APP_URL') . '/cancel',
-    ]);
-    // Retourner l'ID de session et l'URL de redirection
-    return response()->json([
-        'id' => $session->id,
-        'url' => $session->url, // URL de redirection vers Stripe Checkout
-    ]);
-
-
-    return response()->json(['id' => $session->id]);
-}
 }
