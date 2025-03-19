@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Http\Controllers\Api\V1\CartController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -27,14 +26,46 @@ class UserAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $role = Role::findByName('user_manager');
+        $role = Role::findByName('user');
         $user->assignRole($role);
 
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
-   
-public function login(Request $request)
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|string|email',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     $user = User::where('email', $request->email)->first();
+
+    //     if (! $user || ! Hash::check($request->password, $user->password)) {
+    //         throw ValidationException::withMessages([
+    //             'email' => ['The provided credentials are incorrect.'],
+    //         ]);
+    //     }
+
+    //     if ($user->hasAnyRole(['user'])) {
+    //         $token = $user->createToken('user-token')->plainTextToken;
+    //         return response()->json([
+    //         'message' => 'login success to user',
+    //         'token' => $token
+    //         ], 200);
+    //     }
+
+    //     if (!$user->hasAnyRole(['super_admin', 'product_manager', 'user_manager'])) {
+    //         return response()->json(['message' => 'You do not have permission to login'], 403);
+    //     }
+
+
+
+    //     $token = $user->createToken('user-token')->plainTextToken;
+
+    //     return response()->json(['token' => $token], 200);
+    // }
+    public function login(Request $request)
 {
     $request->validate([
         'email' => 'required|string|email',
@@ -86,6 +117,34 @@ public function login(Request $request)
 
         return response()->json(['message' => 'No authenticated user'], 401);
     }
+
+    public function assignRolesAndPermissions(Request $request, $userId)
+    {
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $request->validate([
+            'roles' => 'array',
+            'roles.*' => 'string|exists:roles,name',
+            'permessions' => 'array',
+            'permissions.*' => 'boolean',
+        ]);
+        $user = User::findOrFail($userId);
+
+
+        if ($request->has('roles')) {
+            $user->syncRoles($request->roles);
+        }
+
+        
+        if ($request->has('permissions')) {
+            $permissions = array_keys(array_filter($request->permissions));
+            $user->syncPermissions($permissions);
+        }
+
+        return response()->json(['message' => 'Roles and permissions assigned successfully'], 200);
+    }
+
 
 
 }
