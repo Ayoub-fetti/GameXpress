@@ -80,6 +80,12 @@ class CheckoutController extends Controller
         'success_url' => env('APP_URL') . '/success',
         'cancel_url' => env('APP_URL') . '/cancel',
     ]);
+    // Retourner l'ID de session et l'URL de redirection
+    return response()->json([
+        'id' => $session->id,
+        'url' => $session->url, // URL de redirection vers Stripe Checkout
+    ]);
+
 
     return response()->json(['id' => $session->id]);
 }

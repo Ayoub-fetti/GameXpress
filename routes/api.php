@@ -44,7 +44,7 @@ Route::prefix('cart')->group(function() {
     Route::get('/', [CartController::class, 'index']);
     Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
-    Route::post('/create-session', [CheckoutController::class, 'createSession']);
+    Route::post('/payments', [CheckoutController::class, 'createSession']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);  
