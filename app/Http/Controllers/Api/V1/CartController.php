@@ -174,11 +174,11 @@ class CartController extends Controller
             $cart = Cart::where('user_id', Auth::id())->first();
         } else {
             $sessionId = $request->header('X-Session-Id');
-            if (!$sessionId) {
-                return response()->json([
-                    'message' => 'Session ID is required'
-                ], 400);
-            }
+            // if (!$sessionId) {
+            //     return response()->json([
+            //         'message' => 'Session ID is required'
+            //     ], 400);
+            // }
             $cart = Cart::where('session_id', $sessionId)->first();
         }
 
@@ -223,11 +223,11 @@ class CartController extends Controller
             $cart = Cart::where('user_id', Auth::id())->first();
         } else {
             $sessionId = $request->header('X-Session-Id');
-            if (!$sessionId) {
-                return response()->json([
-                    'message' => 'Session ID is required'
-                ], 400);
-            }
+            // if (!$sessionId) {
+            //     return response()->json([
+            //         'message' => 'Session ID is required'
+            //     ], 400);
+            // }
             $cart = Cart::where('session_id', $sessionId)->first();
         }
 
@@ -269,30 +269,30 @@ class CartController extends Controller
                 'errors' => ['product_id' => ['The selected product does not exist.']]
             ], 404);
         }
-        
+
         if ($request->quantity > $product->stock) {
             return response()->json([
                 'message' => 'Not enough stock available',
                 'errors' => ['quantity' => ['The requested quantity exceeds available stock.']]
             ], 400);
         }
-        
+
         if (Auth::check()) {
-            
+
             $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-            
-          
+
+
             $cartItem = CartItem::where('cart_id', $cart->id)
                 ->where('product_id', $product->id)
                 ->first();
-            
+
             if ($cartItem) {
-                
+
                 $cartItem->quantity += $request->quantity;
                 $cartItem->total_price = $cartItem->quantity * $cartItem->unit_price;
                 $cartItem->save();
             } else {
-                
+
                 $cartItem = CartItem::create([
                     'cart_id' => $cart->id,
                     'product_id' => $product->id,
@@ -301,7 +301,7 @@ class CartController extends Controller
                     'total_price' => $request->quantity * $product->price,
                 ]);
             }
-        
+
             return response()->json([
                 'message' => 'Product added to cart successfully you are login',
                 'cart_item' => $cartItem,
@@ -327,16 +327,16 @@ class CartController extends Controller
             'message' => 'Session ID is required',
         ], 400);
     }
-    
+
     $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
     if (!$sessionCart) {
         return response()->json([
             'message' => 'Session cart not found',
         ], 404);
     }
-    
+
     $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-    
+
     foreach ($sessionCart->items as $sessionItem) {
         $userItem = CartItem::where('cart_id', $userCart->id)
                           ->where('product_id', $sessionItem->product_id)
@@ -344,7 +344,7 @@ class CartController extends Controller
 
         if ($userItem) {
             $newQuantity = $userItem->quantity + $sessionItem->quantity;
-            
+
             if ($newQuantity <= $sessionItem->product->stock) {
                 $userItem->quantity = $newQuantity;
                 $userItem->total_price = $newQuantity * $userItem->unit_price;
@@ -354,7 +354,7 @@ class CartController extends Controller
                 $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
                 $userItem->save();
             }
-            
+
             $sessionItem->delete();
         } else {
             $sessionItem->cart_id = $userCart->id;
@@ -376,23 +376,23 @@ class CartController extends Controller
 }
 public function mergeGuestCart($sessionId, $userId)
 {
-   
+
     $guestCart = Cart::where('session_id', $sessionId)->first();
-    
+
     if (!$guestCart) {
         return response()->json([
-            'message' => 'Panier invité non trouvé', 
+            'message' => 'Panier invité non trouvé',
             'status' => 'error'
         ], 404);
     }
-    
+
     $userCart = Cart::firstOrCreate(['user_id' => $userId]);
-    
+
     $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
-    
+
     if ($guestCartItems->isEmpty()) {
         return response()->json([
-            'message' => 'Panier invité vide', 
+            'message' => 'Panier invité vide',
             'status' => 'info'
         ], 200);
     }
@@ -400,29 +400,29 @@ public function mergeGuestCart($sessionId, $userId)
         $userItem = CartItem::where('cart_id', $userCart->id)
                            ->where('product_id', $guestItem->product_id)
                            ->first();
-        
+
         $product = Product::find($guestItem->product_id);
         if (!$product) {
-            continue; 
+            continue;
         }
         if ($userItem) {
             $newQuantity = $userItem->quantity + $guestItem->quantity;
             // Vérifier le stock disponible
             if ($newQuantity > $product->stock) {
                 $newQuantity = $product->stock; // Limiter à la quantité en stock
-            } 
+            }
             $userItem->quantity = $newQuantity;
             $userItem->total_price = $newQuantity * $userItem->unit_price;
-            $userItem->save();   
+            $userItem->save();
             $guestItem->delete();
-        } else { 
+        } else {
             $guestItem->cart_id = $userCart->id;
             $guestItem->save();
         }
     }
     $guestCart->delete();
     return response()->json([
-        'message' => 'Panier fusionné avec succès', 
+        'message' => 'Panier fusionné avec succès',
         'status' => 'success'
     ], 200);
 }
