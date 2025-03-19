@@ -255,9 +255,6 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
-    public function test () {
-        return test;
-    }
 
 }
 
