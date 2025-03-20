@@ -29,24 +29,66 @@ class DashbordController extends Controller
         return response()->json($payments);
     }
 
-    public function updateOrderStatus(Request $request, $orderId): JsonResponse
-    {
-        $request->validate([
-            'status' => 'required|string|in:pending,processing,cancelled,shipped', // Ajoutez les statuts valides ici
-        ]);
-    
-        $order = Order::find($orderId);
-    
-        if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-    
-        $order->update(['status' => $request->status]);
-    
-        return response()->json([
-            'message' => 'Order status updated successfully',
-            'order' => $order,
-        ]);
+    // public function updateOrderStatus(Request $request, $orderId): JsonResponse
+    // {
+    //     $request->validate([
+    //         'status' => 'required|string|in:pending,processing,cancelled,shipped', // Ajoutez les statuts valides ici
+    //     ]);
+
+    //     $order = Order::find($orderId);
+
+    //     if (!$order) {
+    //         return response()->json(['message' => 'Order not found'], 404);
+    //     }
+
+    //     $order->update(['status' => $request->status]);
+
+    //     return response()->json([
+    //         'message' => 'Order status updated successfully',
+    //         'order' => $order,
+    //     ]);
+    // }
+public function updateOrderStatus(Request $request, $orderId): JsonResponse
+{
+    $request->validate([
+        'status' => 'required|string|in:pending,processing,cancelled,shipped',
+    ]);
+
+    $order = Order::find($orderId);
+
+    if (!$order) {
+        return response()->json(['message' => 'Order not found'], 404);
     }
+
+    // If the status is being changed to "shipped", update product stock
+    if ($request->status === 'shipped' && $order->status !== 'shipped') {
+        // Get the products from the order
+        $orderProducts = $order->products;
+
+        foreach ($orderProducts as $orderProduct) {
+            $product = Product::find($orderProduct['product_id']);
+
+            if ($product) {
+                // Decrease the product stock by the ordered quantity
+                $newStock = max(0, $product->stock - $orderProduct['quantity']);
+                $product->stock = $newStock;
+                $product->save();
+
+                // Update product status if stock is 0
+                if ($newStock === 0) {
+                    $product->status = 'out_of_stock';
+                    $product->save();
+                }
+            }
+        }
+    }
+
+    $order->update(['status' => $request->status]);
+
+    return response()->json([
+        'message' => 'Order status updated successfully',
+        'order' => $order,
+    ]);
+}
 
 }
