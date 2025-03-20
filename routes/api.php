@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\RoleController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\CheckoutController;
 
 Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
 Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
@@ -48,12 +49,14 @@ Route::prefix('cart')->group(function () {
     Route::delete('remove-item/{id}', [CartController::class, 'removeCartItem']);
     Route::post('/add', [CartController::class, 'addToCartGuest']);
     
+    
     Route::middleware('auth:sanctum')->group(function () {
         // Route::get('/show', [CartController::class, 'getCart']);
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
         Route::post('/add-client', [CartController::class, 'addToCartClient']);
         Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);
         Route::post('/sentorder', [OrderController::class, 'createFromCart']);
+        Route::post('/payments', [CheckoutController::class, 'createSession']);
     });
 });
 

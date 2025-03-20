@@ -107,7 +107,7 @@ class CartController extends Controller
 
         return response()->json($response, 201);
     }
-
+    // *****
     public function getCart(Request $request): JsonResponse
     {
         if (Auth::guard('sanctum')->check()) {
@@ -136,7 +136,7 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
-
+    // ***** 
     public function applyPromoCode(Request $request): JsonResponse
     {
         $request->validate([
