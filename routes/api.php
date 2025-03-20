@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:super_admin')->group(function () {
         Route::post('/v1/admin/users/{userId}/assign-roles-permissions', [UserAuthController::class, 'assignRolesAndPermissions']);
+        Route::get('/v1/admin/transactions', [DashbordController::class, 'listTransactions']);
+        Route::post('/v1/admin/orders/{orderId}', [DashbordController::class, 'updateOrderStatus']);
     });
 
     Route::middleware('role:super_admin|user_manager|product_manager')->group(function () {
