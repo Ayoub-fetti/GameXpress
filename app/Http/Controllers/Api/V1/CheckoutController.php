@@ -7,7 +7,6 @@ use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -17,10 +16,12 @@ class CheckoutController extends Controller
 
     public function createSession()
     {
-        
+        // dd(env('STRIPE_SECRET'));
         // Configurez votre clé secrète Stripe
         
-        Stripe::setApiKey(env('STRIPE_SECRET')); 
+        Stripe::setApiKey('sk_test_51R41RuHIFvEer26VQ1G7WXYw6e7hszFa6uu15IPwCWK9M3i2w0EP68Z4ATWbFLBYk38R8IsRhbLB7XjWM1hKvzZb00kIn93CPd'); 
+
+        
 
     
 
@@ -55,9 +56,10 @@ class CheckoutController extends Controller
                 'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
                 'mode' => 'payment',
-                'success_url' => env('APP_URL') . '/success',
-                'cancel_url' => env('APP_URL') . '/cancel',
+                'success_url' => 'http://127.0.0.1:8000/api/cart/success',
+                'cancel_url' => 'http://127.0.0.1:8000/api/cart/cancel',
             ]);
+            // dd( $session );
             // Retourner l'ID de session et l'URL de redirection
             return response()->json([
                 'id' => $session->id,
