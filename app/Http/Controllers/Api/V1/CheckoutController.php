@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use App\Models\Order;
@@ -88,7 +89,6 @@ class CheckoutController extends Controller
     }
     public function success(Request $request)
     {
-
         $sessionId = $request->query('session_id');
         $orderId = $request->query('order_id');
 
@@ -101,7 +101,6 @@ class CheckoutController extends Controller
         try {
             $session = Session::retrieve($sessionId);
 
-            // Si le statut de paiement est "paid", mettre à jour la commande
             // Retrieve the order and check if it has pending status
             $order = Order::find($orderId);
 
@@ -142,8 +141,12 @@ class CheckoutController extends Controller
                 // Mettre à jour la commande
                 $order->update(['status' => 'processing']);
 
+                // Vider le panier de l'utilisateur après paiement réussi
+                $userId = Auth::id();
+                Cart::where('user_id', $userId)->delete();
+
                 return response()->json([
-                    'message' => 'Paiement réussi',
+                    'message' => 'Paiement reussi',
                     'order_id' => $orderId,
                     'order_status' => 'processing'
                 ]);
