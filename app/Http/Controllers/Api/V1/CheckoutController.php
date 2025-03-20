@@ -9,6 +9,7 @@ use Stripe\Checkout\Session;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Attributes\Log;
 
 class CheckoutController extends Controller
 {
@@ -141,15 +142,31 @@ class CheckoutController extends Controller
                 // Mettre à jour la commande
                 $order->update(['status' => 'processing']);
 
-                // Vider le panier de l'utilisateur après paiement réussi
-                $userId = Auth::id();
-                Cart::where('user_id', $userId)->delete();
 
-                return response()->json([
-                    'message' => 'Paiement reussi',
-                    'order_id' => $orderId,
-                    'order_status' => 'processing'
-                ]);
+                if ($order && $order->user_id) {
+                    // Use the order's user_id instead of relying on Auth::id()
+                    Cart::where('user_id', $order->user_id)->delete();
+
+                    return response()->json([
+                        'message' => 'Paiement reussi',
+                        'order_id' => $orderId,
+                        'order_status' => 'processing',
+                        'cart_deleted' => true
+                    ]);
+                } else {
+                    // Log that we couldn't find a user ID to delete the cart
+                    return response()->json('Cannot delete cart: No user ID available', [
+                        'order_id' => $orderId,
+                        'auth_id' => Auth::id(),
+                        'order_user_id' => $order->user_id ?? null
+                    ]);
+
+                    return response()->json([
+                        'message' => 'Paiement reussi',
+                        'order_id' => $orderId,
+                        'order_status' => 'processing'
+                    ]);
+                }
             }
 
             return response()->json([
