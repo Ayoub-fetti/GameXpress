@@ -66,4 +66,5 @@ class CheckoutController extends Controller
                 'url' => $session->url, // URL de redirection vers Stripe Checkout
             ]);
     }
+    
 }
