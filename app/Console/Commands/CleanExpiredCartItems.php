@@ -31,7 +31,7 @@ class CleanExpiredCartItems extends Command
     {
         $this->info('Cleaning expired cart items...');
         
-        $cutoffTime = Carbon::now()->subHours(48);
+        $cutoffTime = Carbon::now()->subMinute(1);
         
         // D'abord, trouvons les articles du panier inactifs depuis 48 heures
         $expiredItems = CartItem::where('updated_at', '<', $cutoffTime)->get();

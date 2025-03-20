@@ -13,15 +13,14 @@ class OrderController extends Controller
     public function createFromCart(Request $request)
     {
         $request->validate([
-
             'session_id' => 'required_if:guest,true|string',
             'guest' => 'boolean'
         ]);
 
-        if (Auth::check()) {
-            $cart = Cart::where('user_id', Auth::id())->first();
+        if (Auth::guard('sanctum')->check()) {
+            $cart = Cart::with('items.product')->where('user_id', Auth::guard('sanctum')->id())->first();
         } else {
-            $cart = Cart::where('session_id', $request->session_id)->first();
+            $cart = Cart::with('items.product')->where('session_id', $request->session_id)->first();
         }
 
         if (!$cart) {
@@ -32,8 +31,26 @@ class OrderController extends Controller
             return response()->json(['message' => 'Cart is empty'], 400);
         }
 
+        // Prepare products data from all cart items
+        $products = $cart->items->map(function ($cartItem) {
+            return [
+                'product_id' => $cartItem->product->id,
+                'product_name' => $cartItem->product->name,
+                'quantity' => $cartItem->quantity,
+                'unit_price' => $cartItem->product->price,
+                'subtotal' => $cartItem->quantity * $cartItem->product->price,
+                'tax_rate' => $cartItem->product->tax_rate ?? 20.00,
+                'tax_amount' => ($cartItem->product->price * ($cartItem->product->tax_rate ?? 20.00) / 100) * $cartItem->quantity,
+                'discount_amount' => $cartItem->discount_amount ?? 0
+            ];
+        })->toArray();
+
         $orderData = [
             'user_id' => $cart->user_id,
+            'products' => $products,
+            'subtotal' => $cart->items->sum(function ($item) {
+                return $item->quantity * $item->product->price;
+            }),
             'total_price' => $cart->total_amount,
             'status' => 'pending',
             'tax_rate' => $cart->tax_rate,
@@ -42,12 +59,10 @@ class OrderController extends Controller
         ];
 
         if ($request->has('guest') && $request->guest) {
-
             $orderData['session_id'] = $request->session_id;
         }
 
         $order = Order::create($orderData);
-
 
         return response()->json([
             'success' => true,
@@ -55,6 +70,4 @@ class OrderController extends Controller
             'order' => $order
         ], 201);
     }
-
-
 } 
