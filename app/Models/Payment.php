@@ -21,6 +21,7 @@ class Payment extends Model
         'status',
         'payment_details',
         'paid_at',
+        'payment_status',
     ];
 
     protected $casts = [
