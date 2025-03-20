@@ -86,7 +86,6 @@ class CheckoutController extends Controller
             ], 400);
         }
     }
-
     public function success(Request $request)
     {
 
@@ -141,12 +140,12 @@ class CheckoutController extends Controller
                 }
 
                 // Mettre à jour la commande
-                $order->update(['status' => 'shipped']);
+                $order->update(['status' => 'processing']);
 
                 return response()->json([
                     'message' => 'Paiement réussi',
                     'order_id' => $orderId,
-                    'order_status' => 'shipped'
+                    'order_status' => 'processing'
                 ]);
             }
 
