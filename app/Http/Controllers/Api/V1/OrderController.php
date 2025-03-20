@@ -18,8 +18,8 @@ class OrderController extends Controller
             'guest' => 'boolean'
         ]);
 
-        if (Auth::check()) {
-            $cart = Cart::where('user_id', Auth::id())->first();
+        if (Auth::guard('sanctum')->check()) {
+            $cart = Cart::where('user_id', Auth::guard('sanctum')->id())->first();
         } else {
             $cart = Cart::where('session_id', $request->session_id)->first();
         }
