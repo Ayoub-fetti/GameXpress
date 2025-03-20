@@ -48,9 +48,10 @@ Route::prefix('cart')->group(function () {
     Route::post('/update', [CartController::class, 'updateCartItem']);
     Route::delete('remove-item/{id}', [CartController::class, 'removeCartItem']);
     Route::post('/add', [CartController::class, 'addToCartGuest']);
-    
-    
+
+
     Route::middleware('auth:sanctum')->group(function () {
+        // Route::get('/show', [CartController::class, 'getCart']);
         Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
         Route::post('/add-client', [CartController::class, 'addToCartClient']);
         Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);
@@ -59,9 +60,12 @@ Route::prefix('cart')->group(function () {
     });
 });
 
+// Routes de paiement
+Route::get('/cart/success', [CheckoutController::class, 'success'])->name('payment.success');
+Route::get('/cart/cancel', [CheckoutController::class, 'cancel'])->name('payment.cancel');
 
 Route::prefix('orders')->group(function () {
-    Route::post('/sentorder', [OrderController::class, 'createFromCart']); 
+    Route::post('/sentorder', [OrderController::class, 'createFromCart']);
 });
 
 Route::get('/login', function () {
