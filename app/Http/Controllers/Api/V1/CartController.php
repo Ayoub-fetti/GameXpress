@@ -384,7 +384,6 @@ class CartController extends Controller
 }
 public function mergeGuestCart($sessionId, $userId)
 {
-
     $guestCart = Cart::where('session_id', $sessionId)->first();
 
     if (!$guestCart) {
@@ -394,7 +393,17 @@ public function mergeGuestCart($sessionId, $userId)
         ], 404);
     }
 
-    $userCart = Cart::firstOrCreate(['user_id' => $userId]);
+    $userCart = Cart::firstOrCreate(
+        ['user_id' => $userId],
+        [
+            'tax_rate' => $guestCart->tax_rate ?? self::TAX_RATE,
+            'subtotal' => 0,
+            'tax_amount' => 0,
+            'discount_amount' => 0,
+            'total_amount' => 0,
+            'expires_at' => now()->addDays(7)
+        ]
+    );
 
     $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
 
@@ -404,6 +413,11 @@ public function mergeGuestCart($sessionId, $userId)
             'status' => 'info'
         ], 200);
     }
+
+    if ($guestCart->discount_amount > 0) {
+        $userCart->discount_amount = $guestCart->discount_amount;
+    }
+
     foreach ($guestCartItems as $guestItem) {
         $userItem = CartItem::where('cart_id', $userCart->id)
                            ->where('product_id', $guestItem->product_id)
@@ -413,12 +427,14 @@ public function mergeGuestCart($sessionId, $userId)
         if (!$product) {
             continue;
         }
+        
         if ($userItem) {
             $newQuantity = $userItem->quantity + $guestItem->quantity;
-            // Vérifier le stock disponible
+            
             if ($newQuantity > $product->stock) {
-                $newQuantity = $product->stock; // Limiter à la quantité en stock
+                $newQuantity = $product->stock;
             }
+            
             $userItem->quantity = $newQuantity;
             $userItem->total_price = $newQuantity * $userItem->unit_price;
             $userItem->save();
@@ -428,10 +444,20 @@ public function mergeGuestCart($sessionId, $userId)
             $guestItem->save();
         }
     }
+
+    CartHelper::calculateCartTotals($userCart);
+    
+    $userCart->expires_at = now()->addDays(7);
+    $userCart->save();
+    
     $guestCart->delete();
+
     return response()->json([
         'message' => 'Panier fusionné avec succès',
-        'status' => 'success'
+        'status' => 'success',
+        'cart' => $userCart,
+        'items' => $userCart->items,
+        'totals' => CartHelper::getCartTotals($userCart)
     ], 200);
 }
 
