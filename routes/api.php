@@ -44,18 +44,18 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::prefix('cart')->group(function () {
-    Route::get('/', [CartController::class, 'index']);
+    Route::get('/products', [CartController::class, 'index']);
     // Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
-    Route::post('/update', [CartController::class, 'updateCartItem']);
-    Route::delete('remove-item/{id}', [CartController::class, 'removeCartItem']);
-    Route::post('/add', [CartController::class, 'addToCartGuest']);
+    Route::post('/item/update', [CartController::class, 'updateCartItem']);
+    Route::delete('/item/remove/{id}', [CartController::class, 'removeCartItem']);
+    Route::post('/guest/add', [CartController::class, 'addToCartGuest']);
 
 
     Route::middleware('auth:sanctum')->group(function () {
         // Route::get('/show', [CartController::class, 'getCart']);
-        Route::post('/apply-promo', [CartController::class, 'applyPromoCode']);
-        Route::post('/add-client', [CartController::class, 'addToCartClient']);
+        Route::post('/promo_code', [CartController::class, 'applyPromoCode']);
+        Route::post('/client/add', [CartController::class, 'addToCartClient']);
         Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);
         Route::post('/sentorder', [OrderController::class, 'createFromCart']);
         Route::post('/payments', [CheckoutController::class, 'createSession']);

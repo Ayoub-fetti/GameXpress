@@ -8,7 +8,7 @@
         "/products": {
             "get": {
                 "tags": [
-                    "Products"
+                    "Cart"
                 ],
                 "summary": "Retrieve all products",
                 "operationId": "fe6a523a55fa97f6db65f41537cf8958",
@@ -21,12 +21,613 @@
                     }
                 }
             }
+        },
+        "/cart/guest/add": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Add a product to the guest cart",
+                "operationId": "bf81988df8e96f80af1048c66ba50f14",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "product_id": {
+                                        "description": "ID of the product to add",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "description": "Quantity of the product to add",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product added to cart successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product added to cart successfully"
+                                        },
+                                        "cart_item": {
+                                            "description": "Details of the added cart item",
+                                            "type": "object"
+                                        },
+                                        "cart_totals": {
+                                            "description": "Cart totals after the addition",
+                                            "type": "object"
+                                        },
+                                        "session_id": {
+                                            "description": "Session ID for guest users (if applicable)",
+                                            "type": "string",
+                                            "example": "random-session-id"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or insufficient stock",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not enough stock available"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the validation errors",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the error",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/Show": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Retrieve the current user's cart",
+                "operationId": "7f8a34470118019f5ae4ee273cdda74f",
+                "parameters": [
+                    {
+                        "name": "X-Session-Id",
+                        "in": "header",
+                        "description": "Session ID for guest users",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "random-session-id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "cart": {
+                                            "description": "Details of the cart",
+                                            "type": "object"
+                                        },
+                                        "items": {
+                                            "description": "List of cart items",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "totals": {
+                                            "description": "Cart totals",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Session ID is required for guest users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Session ID is required"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/promo_code": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Apply a promo code to the cart",
+                "operationId": "cfb42ae5dcf729feb6f161a0b02ff9eb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "code": {
+                                        "description": "Promo code to apply",
+                                        "type": "string",
+                                        "example": "PROMO2025"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Promo code applied successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Promo code applied successfully"
+                                        },
+                                        "discount": {
+                                            "description": "Discount amount applied",
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 10.5
+                                        },
+                                        "cart_totals": {
+                                            "description": "Updated cart totals after applying the promo code",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid promo code or session ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid promo code"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the validation errors",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not authenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "item/update": {
+            "put": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Update the quantity of a cart item",
+                "operationId": "e4619f30b6d0bca54d8a8561fa1b56b0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cart_item_id": {
+                                        "description": "ID of the cart item to update",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "description": "New quantity for the cart item",
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cart item updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart item updated successfully"
+                                        },
+                                        "cart_item": {
+                                            "description": "Details of the updated cart item",
+                                            "type": "object"
+                                        },
+                                        "totals": {
+                                            "description": "Updated cart totals",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or insufficient stock",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not enough stock available"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the validation errors",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart or cart item not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart or cart item not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not authenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/item/remove/{id}": {
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Remove an item from the cart",
+                "operationId": "f99f99f4b6cd4bd64887fb0cd9d8ad93",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the cart item to remove",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "X-Session-Id",
+                        "in": "header",
+                        "description": "Session ID for guest users",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "random-session-id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cart item removed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart item removed successfully"
+                                        },
+                                        "totals": {
+                                            "description": "Updated cart totals",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cart or cart item not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cart or cart item not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not authenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/client/add": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Add a product to the client cart",
+                "operationId": "927adf5c6a50bb5e537010b822570d4a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "product_id": {
+                                        "description": "ID of the product to add",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantity": {
+                                        "description": "Quantity of the product to add",
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product added to cart successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product added to cart successfully"
+                                        },
+                                        "cart_item": {
+                                            "description": "Details of the added cart item",
+                                            "type": "object"
+                                        },
+                                        "cart_totals": {
+                                            "description": "Cart totals after the addition",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input or insufficient stock",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not enough stock available"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the validation errors",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the error",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not authenticated"
+                                        },
+                                        "errors": {
+                                            "description": "Details of the error",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "tags": [
         {
-            "name": "Products",
-            "description": "Products"
+            "name": "Cart",
+            "description": "Cart"
         }
     ]
 }

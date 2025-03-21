@@ -33,7 +33,7 @@ class CartController extends Controller
          * @OA\Get(
          *     path="/products",
          *     summary="Retrieve all products",
-         *     tags={"Products"},
+         *     tags={"Cart"},
          *     @OA\Response(
          *         response=200,
          *         description="Successful operation",
@@ -49,6 +49,51 @@ class CartController extends Controller
     {
         return response()->json(Product::all(),200);
     }
+
+        /**
+         * @OA\Post(
+         *     path="/cart/guest/add",
+         *     summary="Add a product to the guest cart",
+         *     tags={"Cart"},
+         *     @OA\RequestBody(
+         *         required=true,
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="product_id", type="integer", example=1, description="ID of the product to add"),
+         *             @OA\Property(property="quantity", type="integer", example=2, description="Quantity of the product to add")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=201,
+         *         description="Product added to cart successfully",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product added to cart successfully"),
+         *             @OA\Property(property="cart_item", type="object", description="Details of the added cart item"),
+         *             @OA\Property(property="cart_totals", type="object", description="Cart totals after the addition"),
+         *             @OA\Property(property="session_id", type="string", example="random-session-id", description="Session ID for guest users (if applicable)")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=400,
+         *         description="Invalid input or insufficient stock",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+         *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=404,
+         *         description="Product not found",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product not found"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     )
+         * )
+ */
 
 
 
@@ -127,7 +172,47 @@ class CartController extends Controller
 
         return response()->json($response, 201);
     }
-    // *****
+
+    /**
+     * @OA\Get(
+     *     path="/Show",
+     *     summary="Retrieve the current user's cart",
+     *     tags={"Cart"},
+     *     @OA\Parameter(
+     *         name="X-Session-Id",
+     *         in="header",
+     *         required=false,
+     *         description="Session ID for guest users",
+     *         @OA\Schema(type="string", example="random-session-id")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="cart", type="object", description="Details of the cart"),
+     *             @OA\Property(property="items", type="array", @OA\Items(type="object"), description="List of cart items"),
+     *             @OA\Property(property="totals", type="object", description="Cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Session ID is required for guest users",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Session ID is required")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart not found")
+     *         )
+     *     )
+     * )
+     */
     public function getCart(Request $request): JsonResponse
     {
         if (Auth::guard('sanctum')->check()) {
@@ -156,7 +241,55 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
-    // ***** 
+    /**
+     * @OA\Post(
+     *     path="/promo_code",
+     *     summary="Apply a promo code to the cart",
+     *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="code", type="string", example="PROMO2025", description="Promo code to apply")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Promo code applied successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Promo code applied successfully"),
+     *             @OA\Property(property="discount", type="number", format="float", example=10.5, description="Discount amount applied"),
+     *             @OA\Property(property="cart_totals", type="object", description="Updated cart totals after applying the promo code")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid promo code or session ID",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid promo code"),
+     *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
     public function applyPromoCode(Request $request): JsonResponse
     {
         $request->validate([
@@ -185,7 +318,56 @@ class CartController extends Controller
 
         return response()->json($result);
     }
-
+    /**
+     * @OA\Put(
+     *     path="item/update",
+     *     summary="Update the quantity of a cart item",
+     *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="cart_item_id", type="integer", example=1, description="ID of the cart item to update"),
+     *             @OA\Property(property="quantity", type="integer", example=3, description="New quantity for the cart item")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart item updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart item updated successfully"),
+     *             @OA\Property(property="cart_item", type="object", description="Details of the updated cart item"),
+     *             @OA\Property(property="totals", type="object", description="Updated cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input or insufficient stock",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+     *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart or cart item not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart or cart item not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
     public function updateCartItem(Request $request): JsonResponse
     {
         $request->validate([
@@ -239,6 +421,52 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
+    /**
+     * @OA\Delete(
+     *     path="/item/remove/{id}",
+     *     summary="Remove an item from the cart",
+     *     tags={"Cart"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the cart item to remove",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="X-Session-Id",
+     *         in="header",
+     *         required=false,
+     *         description="Session ID for guest users",
+     *         @OA\Schema(type="string", example="random-session-id")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart item removed successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart item removed successfully"),
+     *             @OA\Property(property="totals", type="object", description="Updated cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart or cart item not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart or cart item not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
 
     public function removeCartItem($id, Request $request): JsonResponse
     {
@@ -278,6 +506,59 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
+
+           /**
+         * @OA\Post(
+         *     path="/cart/client/add",
+         *     summary="Add a product to the client cart",
+         *     tags={"Cart"},
+         *     @OA\RequestBody(
+         *         required=true,
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="product_id", type="integer", example=1, description="ID of the product to add"),
+         *             @OA\Property(property="quantity", type="integer", example=2, description="Quantity of the product to add")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=201,
+         *         description="Product added to cart successfully",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product added to cart successfully"),
+         *             @OA\Property(property="cart_item", type="object", description="Details of the added cart item"),
+         *             @OA\Property(property="cart_totals", type="object", description="Cart totals after the addition"),
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=400,
+         *         description="Invalid input or insufficient stock",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+         *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=404,
+         *         description="Product not found",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product not found"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=401,
+         *         description="User not authenticated",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="User not authenticated"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     )
+         * )
+ */
     public function addToCartClient(Request $request): JsonResponse{
 
         $request->validate([
