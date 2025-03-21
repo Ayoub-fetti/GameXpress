@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 
 class UserAuthController extends Controller
 {
+
     public function register(Request $request)
     {
         $request->validate([

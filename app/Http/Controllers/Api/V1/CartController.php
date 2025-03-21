@@ -27,10 +27,75 @@ class CartController extends Controller
         return $sessionId;
     }
 
+        /**
+         * 
+         * @O
+         * @OA\Get(
+         *     path="/products",
+         *     summary="Retrieve all products",
+         *     tags={"Cart"},
+         *     @OA\Response(
+         *         response=200,
+         *         description="Successful operation",
+         *     ),
+         *     @OA\Response(
+         *         response=500,
+         *         description="Server error"
+         *     )
+         * )
+         */
+
     public function index()
     {
         return response()->json(Product::all(),200);
     }
+
+        /**
+         * @OA\Post(
+         *     path="/cart/guest/add",
+         *     summary="Add a product to the guest cart",
+         *     tags={"Cart"},
+         *     @OA\RequestBody(
+         *         required=true,
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="product_id", type="integer", example=1, description="ID of the product to add"),
+         *             @OA\Property(property="quantity", type="integer", example=2, description="Quantity of the product to add")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=201,
+         *         description="Product added to cart successfully",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product added to cart successfully"),
+         *             @OA\Property(property="cart_item", type="object", description="Details of the added cart item"),
+         *             @OA\Property(property="cart_totals", type="object", description="Cart totals after the addition"),
+         *             @OA\Property(property="session_id", type="string", example="random-session-id", description="Session ID for guest users (if applicable)")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=400,
+         *         description="Invalid input or insufficient stock",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+         *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=404,
+         *         description="Product not found",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product not found"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     )
+         * )
+ */
+
+
 
     public function addToCartGuest(Request $request): JsonResponse
     {
@@ -107,7 +172,47 @@ class CartController extends Controller
 
         return response()->json($response, 201);
     }
-    // *****
+
+    /**
+     * @OA\Get(
+     *     path="/Show",
+     *     summary="Retrieve the current user's cart",
+     *     tags={"Cart"},
+     *     @OA\Parameter(
+     *         name="X-Session-Id",
+     *         in="header",
+     *         required=false,
+     *         description="Session ID for guest users",
+     *         @OA\Schema(type="string", example="random-session-id")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart retrieved successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="cart", type="object", description="Details of the cart"),
+     *             @OA\Property(property="items", type="array", @OA\Items(type="object"), description="List of cart items"),
+     *             @OA\Property(property="totals", type="object", description="Cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Session ID is required for guest users",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Session ID is required")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart not found")
+     *         )
+     *     )
+     * )
+     */
     public function getCart(Request $request): JsonResponse
     {
         if (Auth::guard('sanctum')->check()) {
@@ -136,7 +241,55 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
-    // ***** 
+    /**
+     * @OA\Post(
+     *     path="/promo_code",
+     *     summary="Apply a promo code to the cart",
+     *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="code", type="string", example="PROMO2025", description="Promo code to apply")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Promo code applied successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Promo code applied successfully"),
+     *             @OA\Property(property="discount", type="number", format="float", example=10.5, description="Discount amount applied"),
+     *             @OA\Property(property="cart_totals", type="object", description="Updated cart totals after applying the promo code")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid promo code or session ID",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Invalid promo code"),
+     *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
     public function applyPromoCode(Request $request): JsonResponse
     {
         $request->validate([
@@ -165,7 +318,56 @@ class CartController extends Controller
 
         return response()->json($result);
     }
-
+    /**
+     * @OA\Put(
+     *     path="item/update",
+     *     summary="Update the quantity of a cart item",
+     *     tags={"Cart"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="cart_item_id", type="integer", example=1, description="ID of the cart item to update"),
+     *             @OA\Property(property="quantity", type="integer", example=3, description="New quantity for the cart item")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart item updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart item updated successfully"),
+     *             @OA\Property(property="cart_item", type="object", description="Details of the updated cart item"),
+     *             @OA\Property(property="totals", type="object", description="Updated cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid input or insufficient stock",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+     *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart or cart item not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart or cart item not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
     public function updateCartItem(Request $request): JsonResponse
     {
         $request->validate([
@@ -219,6 +421,52 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
+    /**
+     * @OA\Delete(
+     *     path="/item/remove/{id}",
+     *     summary="Remove an item from the cart",
+     *     tags={"Cart"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the cart item to remove",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="X-Session-Id",
+     *         in="header",
+     *         required=false,
+     *         description="Session ID for guest users",
+     *         @OA\Schema(type="string", example="random-session-id")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Cart item removed successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart item removed successfully"),
+     *             @OA\Property(property="totals", type="object", description="Updated cart totals")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Cart or cart item not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Cart or cart item not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="User not authenticated",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="User not authenticated")
+     *         )
+     *     )
+     * )
+     */
 
     public function removeCartItem($id, Request $request): JsonResponse
     {
@@ -258,6 +506,59 @@ class CartController extends Controller
             'totals' => CartHelper::getCartTotals($cart)
         ], 200);
     }
+
+           /**
+         * @OA\Post(
+         *     path="/cart/client/add",
+         *     summary="Add a product to the client cart",
+         *     tags={"Cart"},
+         *     @OA\RequestBody(
+         *         required=true,
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="product_id", type="integer", example=1, description="ID of the product to add"),
+         *             @OA\Property(property="quantity", type="integer", example=2, description="Quantity of the product to add")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=201,
+         *         description="Product added to cart successfully",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product added to cart successfully"),
+         *             @OA\Property(property="cart_item", type="object", description="Details of the added cart item"),
+         *             @OA\Property(property="cart_totals", type="object", description="Cart totals after the addition"),
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=400,
+         *         description="Invalid input or insufficient stock",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Not enough stock available"),
+         *             @OA\Property(property="errors", type="object", description="Details of the validation errors")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=404,
+         *         description="Product not found",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="Product not found"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=401,
+         *         description="User not authenticated",
+         *         @OA\JsonContent(
+         *             type="object",
+         *             @OA\Property(property="message", type="string", example="User not authenticated"),
+         *             @OA\Property(property="errors", type="object", description="Details of the error")
+         *         )
+         *     )
+         * )
+ */
     public function addToCartClient(Request $request): JsonResponse{
 
         $request->validate([
@@ -322,144 +623,144 @@ class CartController extends Controller
         ], 401);
     }
     public function mergeCartAfterLogin(Request $request): JsonResponse
-{
-    if (!Auth::check()) {
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        $sessionId = $request->header('X-Session-Id');
+        if (!$sessionId) {
+            return response()->json([
+                'message' => 'Session ID is required',
+            ], 400);
+        }
+
+        $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
+        if (!$sessionCart) {
+            return response()->json([
+                'message' => 'Session cart not found',
+            ], 404);
+        }
+
+        $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+
+        foreach ($sessionCart->items as $sessionItem) {
+            $userItem = CartItem::where('cart_id', $userCart->id)
+                            ->where('product_id', $sessionItem->product_id)
+                            ->first();
+
+            if ($userItem) {
+                $newQuantity = $userItem->quantity + $sessionItem->quantity;
+
+                if ($newQuantity <= $sessionItem->product->stock) {
+                    $userItem->quantity = $newQuantity;
+                    $userItem->total_price = $newQuantity * $userItem->unit_price;
+                    $userItem->save();
+                } else {
+                    $userItem->quantity = $sessionItem->product->stock;
+                    $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
+                    $userItem->save();
+                }
+
+                $sessionItem->delete();
+            } else {
+                $sessionItem->cart_id = $userCart->id;
+                $sessionItem->save();
+            }
+        }
+
+        $sessionCart->delete();
+
+        $updatedCart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        // $cartTotals = \App\Helpers\CartHelper::getCartTotals($updatedCart);
+
         return response()->json([
-            'message' => 'User not authenticated',
-        ], 401);
+            'message' => 'Cart merged successfully',
+            'cart' => $updatedCart,
+            // 'items' => $updatedCart->items,
+            // 'totals' => $cartTotals
+        ], 200);
     }
+    public function mergeGuestCart($sessionId, $userId)
+    {
+        $guestCart = Cart::where('session_id', $sessionId)->first();
 
-    $sessionId = $request->header('X-Session-Id');
-    if (!$sessionId) {
-        return response()->json([
-            'message' => 'Session ID is required',
-        ], 400);
-    }
+        if (!$guestCart) {
+            return response()->json([
+                'message' => 'Panier invité non trouvé',
+                'status' => 'error'
+            ], 404);
+        }
 
-    $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
-    if (!$sessionCart) {
-        return response()->json([
-            'message' => 'Session cart not found',
-        ], 404);
-    }
+        $userCart = Cart::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'tax_rate' => $guestCart->tax_rate ?? self::TAX_RATE,
+                'subtotal' => 0,
+                'tax_amount' => 0,
+                'discount_amount' => 0,
+                'total_amount' => 0,
+                'expires_at' => now()->addDays(7)
+            ]
+        );
 
-    $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+        $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
 
-    foreach ($sessionCart->items as $sessionItem) {
-        $userItem = CartItem::where('cart_id', $userCart->id)
-                          ->where('product_id', $sessionItem->product_id)
-                          ->first();
+        if ($guestCartItems->isEmpty()) {
+            return response()->json([
+                'message' => 'Panier invité vide',
+                'status' => 'info'
+            ], 200);
+        }
 
-        if ($userItem) {
-            $newQuantity = $userItem->quantity + $sessionItem->quantity;
+        if ($guestCart->discount_amount > 0) {
+            $userCart->discount_amount = $guestCart->discount_amount;
+        }
 
-            if ($newQuantity <= $sessionItem->product->stock) {
+        foreach ($guestCartItems as $guestItem) {
+            $userItem = CartItem::where('cart_id', $userCart->id)
+                            ->where('product_id', $guestItem->product_id)
+                            ->first();
+
+            $product = Product::find($guestItem->product_id);
+            if (!$product) {
+                continue;
+            }
+            
+            if ($userItem) {
+                $newQuantity = $userItem->quantity + $guestItem->quantity;
+                
+                if ($newQuantity > $product->stock) {
+                    $newQuantity = $product->stock;
+                }
+                
                 $userItem->quantity = $newQuantity;
                 $userItem->total_price = $newQuantity * $userItem->unit_price;
                 $userItem->save();
+                $guestItem->delete();
             } else {
-                $userItem->quantity = $sessionItem->product->stock;
-                $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
-                $userItem->save();
+                $guestItem->cart_id = $userCart->id;
+                $guestItem->save();
             }
-
-            $sessionItem->delete();
-        } else {
-            $sessionItem->cart_id = $userCart->id;
-            $sessionItem->save();
         }
-    }
 
-    $sessionCart->delete();
+        CartHelper::calculateCartTotals($userCart);
+        
+        $userCart->expires_at = now()->addDays(7);
+        $userCart->save();
+        
+        $guestCart->delete();
 
-    $updatedCart = Cart::with('items.product')->where('user_id', Auth::id())->first();
-    // $cartTotals = \App\Helpers\CartHelper::getCartTotals($updatedCart);
-
-    return response()->json([
-        'message' => 'Cart merged successfully',
-        'cart' => $updatedCart,
-        // 'items' => $updatedCart->items,
-        // 'totals' => $cartTotals
-    ], 200);
-}
-public function mergeGuestCart($sessionId, $userId)
-{
-    $guestCart = Cart::where('session_id', $sessionId)->first();
-
-    if (!$guestCart) {
         return response()->json([
-            'message' => 'Panier invité non trouvé',
-            'status' => 'error'
-        ], 404);
-    }
-
-    $userCart = Cart::firstOrCreate(
-        ['user_id' => $userId],
-        [
-            'tax_rate' => $guestCart->tax_rate ?? self::TAX_RATE,
-            'subtotal' => 0,
-            'tax_amount' => 0,
-            'discount_amount' => 0,
-            'total_amount' => 0,
-            'expires_at' => now()->addDays(7)
-        ]
-    );
-
-    $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
-
-    if ($guestCartItems->isEmpty()) {
-        return response()->json([
-            'message' => 'Panier invité vide',
-            'status' => 'info'
+            'message' => 'Panier fusionné avec succès',
+            'status' => 'success',
+            'cart' => $userCart,
+            'items' => $userCart->items,
+            'totals' => CartHelper::getCartTotals($userCart)
         ], 200);
     }
-
-    if ($guestCart->discount_amount > 0) {
-        $userCart->discount_amount = $guestCart->discount_amount;
-    }
-
-    foreach ($guestCartItems as $guestItem) {
-        $userItem = CartItem::where('cart_id', $userCart->id)
-                           ->where('product_id', $guestItem->product_id)
-                           ->first();
-
-        $product = Product::find($guestItem->product_id);
-        if (!$product) {
-            continue;
-        }
-        
-        if ($userItem) {
-            $newQuantity = $userItem->quantity + $guestItem->quantity;
-            
-            if ($newQuantity > $product->stock) {
-                $newQuantity = $product->stock;
-            }
-            
-            $userItem->quantity = $newQuantity;
-            $userItem->total_price = $newQuantity * $userItem->unit_price;
-            $userItem->save();
-            $guestItem->delete();
-        } else {
-            $guestItem->cart_id = $userCart->id;
-            $guestItem->save();
-        }
-    }
-
-    CartHelper::calculateCartTotals($userCart);
-    
-    $userCart->expires_at = now()->addDays(7);
-    $userCart->save();
-    
-    $guestCart->delete();
-
-    return response()->json([
-        'message' => 'Panier fusionné avec succès',
-        'status' => 'success',
-        'cart' => $userCart,
-        'items' => $userCart->items,
-        'totals' => CartHelper::getCartTotals($userCart)
-    ], 200);
-}
 
 
 }
