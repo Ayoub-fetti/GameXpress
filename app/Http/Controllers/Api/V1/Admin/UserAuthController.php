@@ -26,7 +26,12 @@ class UserAuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $role = Role::findByName('user');
+        if (User::count() === 1) {
+            $role = Role::findByName('super_admin');
+        } else {
+            $role = Role::findByName('user');
+        }
+
         $user->assignRole($role);
 
         return response()->json(['message' => 'User registered successfully'], 201);
