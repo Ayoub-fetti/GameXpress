@@ -39,19 +39,18 @@ class CheckoutController extends Controller
         }
 
         $lineItems = [];
+        
         foreach ($order->products as $product) {
-            $discountPerUnit = $order->discount_amount / count($order->products);
-            $priceAfterDiscount = floatval($product['unit_price']) - $discountPerUnit;
-            $unitPriceWithTaxAndDiscount = $priceAfterDiscount + ($priceAfterDiscount * ($product['tax_rate'] / 100));
-
+            $pricePerUnit = floatval($order->total_price) / array_sum(array_column($order->products, 'quantity'));
+            
             $lineItems[] = [
                 'price_data' => [
                     'currency' => 'MAD',
                     'product_data' => [
                         'name' => $product['product_name'],
-                        'description' => "Quantity: {$product['quantity']} - Prix initial: {$product['unit_price']} MAD - Promotion: {$discountPerUnit} MAD - Prix après promotion: {$priceAfterDiscount} MAD - TVA: {$product['tax_rate']}%"
+                        'description' => "Prix total: {$order->total_price} MAD - TVA incluse: {$order->tax_amount} MAD - Remise: {$order->discount_amount} MAD"
                     ],
-                    'unit_amount' => round($unitPriceWithTaxAndDiscount * 100),
+                    'unit_amount' => round($pricePerUnit * 100),
                 ],
                 'quantity' => $product['quantity'],
             ];
