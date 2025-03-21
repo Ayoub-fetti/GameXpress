@@ -40,15 +40,18 @@ class CheckoutController extends Controller
 
         $lineItems = [];
         foreach ($order->products as $product) {
-            $unitPriceWithTax = $product['unit_price'] + ($product['unit_price'] * ($product['tax_rate'] / 100));
+            $discountPerUnit = $order->discount_amount / count($order->products);
+            $priceAfterDiscount = floatval($product['unit_price']) - $discountPerUnit;
+            $unitPriceWithTaxAndDiscount = $priceAfterDiscount + ($priceAfterDiscount * ($product['tax_rate'] / 100));
+
             $lineItems[] = [
                 'price_data' => [
                     'currency' => 'MAD',
                     'product_data' => [
                         'name' => $product['product_name'],
-                        'description' => "Quantity: {$product['quantity']} - Unit Price: {$product['unit_price']} MAD - TVA: {$product['tax_rate']}%"
+                        'description' => "Quantity: {$product['quantity']} - Prix initial: {$product['unit_price']} MAD - Promotion: {$discountPerUnit} MAD - Prix après promotion: {$priceAfterDiscount} MAD - TVA: {$product['tax_rate']}%"
                     ],
-                    'unit_amount' => round($unitPriceWithTax * 100),
+                    'unit_amount' => round($unitPriceWithTaxAndDiscount * 100),
                 ],
                 'quantity' => $product['quantity'],
             ];
@@ -73,15 +76,21 @@ class CheckoutController extends Controller
                 'payment_details' => [
                     'session_url' => $session->url,
                     'created_at' => now()->toISOString(),
-                    'products_count' => count($lineItems)
+                    'products_count' => count($lineItems),
+                    'subtotal' => $order->subtotal,
+                    'discount_amount' => $order->discount_amount,
+                    'tax_amount' => $order->tax_amount,
+                    'final_price' => $order->total_price
                 ]
             ]);
 
             return response()->json([
                 'id' => $session->id,
                 'url' => $session->url,
-                'products_count' => count($lineItems)
+                'products_count' => count($lineItems),
+                'amount' => $order->total_price
             ]);
+
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -102,11 +111,9 @@ class CheckoutController extends Controller
         try {
             $session = Session::retrieve($sessionId);
 
-            // Retrieve the order and check if it has pending status
             $order = Order::find($orderId);
 
             if ($order && $order->status === 'pending') {
-                // Retrouver le paiement
                 $payment = Payment::where('stripe_session_id', $sessionId)->first();
 
                 if (!$payment) {
@@ -117,7 +124,7 @@ class CheckoutController extends Controller
                         'stripe_session_id' => $sessionId,
                         'stripe_payment_intent_id' => $session->payment_intent,
                         'payment_method' => 'stripe',
-                        'amount' => $session->amount_total / 100, // Convertir de centimes
+                        'amount' => $session->amount_total / 100, 
                         'currency' => $session->currency,
                         'status' => 'completed',
                         'payment_details' => [
@@ -127,7 +134,6 @@ class CheckoutController extends Controller
                         'paid_at' => now()
                     ]);
                 } else {
-                    // Mettre à jour le paiement existant
                     $payment->update([
                         'status' => 'completed',
                         'stripe_payment_intent_id' => $session->payment_intent,
@@ -139,7 +145,6 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                // Mettre à jour la commande
                 $order->update(['status' => 'processing']);
 
 
