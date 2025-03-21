@@ -27,10 +27,30 @@ class CartController extends Controller
         return $sessionId;
     }
 
+        /**
+         * 
+         * @O
+         * @OA\Get(
+         *     path="/products",
+         *     summary="Retrieve all products",
+         *     tags={"Products"},
+         *     @OA\Response(
+         *         response=200,
+         *         description="Successful operation",
+         *     ),
+         *     @OA\Response(
+         *         response=500,
+         *         description="Server error"
+         *     )
+         * )
+         */
+
     public function index()
     {
         return response()->json(Product::all(),200);
     }
+
+
 
     public function addToCartGuest(Request $request): JsonResponse
     {
@@ -322,144 +342,144 @@ class CartController extends Controller
         ], 401);
     }
     public function mergeCartAfterLogin(Request $request): JsonResponse
-{
-    if (!Auth::check()) {
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        $sessionId = $request->header('X-Session-Id');
+        if (!$sessionId) {
+            return response()->json([
+                'message' => 'Session ID is required',
+            ], 400);
+        }
+
+        $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
+        if (!$sessionCart) {
+            return response()->json([
+                'message' => 'Session cart not found',
+            ], 404);
+        }
+
+        $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+
+        foreach ($sessionCart->items as $sessionItem) {
+            $userItem = CartItem::where('cart_id', $userCart->id)
+                            ->where('product_id', $sessionItem->product_id)
+                            ->first();
+
+            if ($userItem) {
+                $newQuantity = $userItem->quantity + $sessionItem->quantity;
+
+                if ($newQuantity <= $sessionItem->product->stock) {
+                    $userItem->quantity = $newQuantity;
+                    $userItem->total_price = $newQuantity * $userItem->unit_price;
+                    $userItem->save();
+                } else {
+                    $userItem->quantity = $sessionItem->product->stock;
+                    $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
+                    $userItem->save();
+                }
+
+                $sessionItem->delete();
+            } else {
+                $sessionItem->cart_id = $userCart->id;
+                $sessionItem->save();
+            }
+        }
+
+        $sessionCart->delete();
+
+        $updatedCart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+        // $cartTotals = \App\Helpers\CartHelper::getCartTotals($updatedCart);
+
         return response()->json([
-            'message' => 'User not authenticated',
-        ], 401);
+            'message' => 'Cart merged successfully',
+            'cart' => $updatedCart,
+            // 'items' => $updatedCart->items,
+            // 'totals' => $cartTotals
+        ], 200);
     }
+    public function mergeGuestCart($sessionId, $userId)
+    {
+        $guestCart = Cart::where('session_id', $sessionId)->first();
 
-    $sessionId = $request->header('X-Session-Id');
-    if (!$sessionId) {
-        return response()->json([
-            'message' => 'Session ID is required',
-        ], 400);
-    }
+        if (!$guestCart) {
+            return response()->json([
+                'message' => 'Panier invité non trouvé',
+                'status' => 'error'
+            ], 404);
+        }
 
-    $sessionCart = Cart::with('items.product')->where('session_id', $sessionId)->first();
-    if (!$sessionCart) {
-        return response()->json([
-            'message' => 'Session cart not found',
-        ], 404);
-    }
+        $userCart = Cart::firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'tax_rate' => $guestCart->tax_rate ?? self::TAX_RATE,
+                'subtotal' => 0,
+                'tax_amount' => 0,
+                'discount_amount' => 0,
+                'total_amount' => 0,
+                'expires_at' => now()->addDays(7)
+            ]
+        );
 
-    $userCart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+        $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
 
-    foreach ($sessionCart->items as $sessionItem) {
-        $userItem = CartItem::where('cart_id', $userCart->id)
-                          ->where('product_id', $sessionItem->product_id)
-                          ->first();
+        if ($guestCartItems->isEmpty()) {
+            return response()->json([
+                'message' => 'Panier invité vide',
+                'status' => 'info'
+            ], 200);
+        }
 
-        if ($userItem) {
-            $newQuantity = $userItem->quantity + $sessionItem->quantity;
+        if ($guestCart->discount_amount > 0) {
+            $userCart->discount_amount = $guestCart->discount_amount;
+        }
 
-            if ($newQuantity <= $sessionItem->product->stock) {
+        foreach ($guestCartItems as $guestItem) {
+            $userItem = CartItem::where('cart_id', $userCart->id)
+                            ->where('product_id', $guestItem->product_id)
+                            ->first();
+
+            $product = Product::find($guestItem->product_id);
+            if (!$product) {
+                continue;
+            }
+            
+            if ($userItem) {
+                $newQuantity = $userItem->quantity + $guestItem->quantity;
+                
+                if ($newQuantity > $product->stock) {
+                    $newQuantity = $product->stock;
+                }
+                
                 $userItem->quantity = $newQuantity;
                 $userItem->total_price = $newQuantity * $userItem->unit_price;
                 $userItem->save();
+                $guestItem->delete();
             } else {
-                $userItem->quantity = $sessionItem->product->stock;
-                $userItem->total_price = $sessionItem->product->stock * $userItem->unit_price;
-                $userItem->save();
+                $guestItem->cart_id = $userCart->id;
+                $guestItem->save();
             }
-
-            $sessionItem->delete();
-        } else {
-            $sessionItem->cart_id = $userCart->id;
-            $sessionItem->save();
         }
-    }
 
-    $sessionCart->delete();
+        CartHelper::calculateCartTotals($userCart);
+        
+        $userCart->expires_at = now()->addDays(7);
+        $userCart->save();
+        
+        $guestCart->delete();
 
-    $updatedCart = Cart::with('items.product')->where('user_id', Auth::id())->first();
-    // $cartTotals = \App\Helpers\CartHelper::getCartTotals($updatedCart);
-
-    return response()->json([
-        'message' => 'Cart merged successfully',
-        'cart' => $updatedCart,
-        // 'items' => $updatedCart->items,
-        // 'totals' => $cartTotals
-    ], 200);
-}
-public function mergeGuestCart($sessionId, $userId)
-{
-    $guestCart = Cart::where('session_id', $sessionId)->first();
-
-    if (!$guestCart) {
         return response()->json([
-            'message' => 'Panier invité non trouvé',
-            'status' => 'error'
-        ], 404);
-    }
-
-    $userCart = Cart::firstOrCreate(
-        ['user_id' => $userId],
-        [
-            'tax_rate' => $guestCart->tax_rate ?? self::TAX_RATE,
-            'subtotal' => 0,
-            'tax_amount' => 0,
-            'discount_amount' => 0,
-            'total_amount' => 0,
-            'expires_at' => now()->addDays(7)
-        ]
-    );
-
-    $guestCartItems = CartItem::where('cart_id', $guestCart->id)->get();
-
-    if ($guestCartItems->isEmpty()) {
-        return response()->json([
-            'message' => 'Panier invité vide',
-            'status' => 'info'
+            'message' => 'Panier fusionné avec succès',
+            'status' => 'success',
+            'cart' => $userCart,
+            'items' => $userCart->items,
+            'totals' => CartHelper::getCartTotals($userCart)
         ], 200);
     }
-
-    if ($guestCart->discount_amount > 0) {
-        $userCart->discount_amount = $guestCart->discount_amount;
-    }
-
-    foreach ($guestCartItems as $guestItem) {
-        $userItem = CartItem::where('cart_id', $userCart->id)
-                           ->where('product_id', $guestItem->product_id)
-                           ->first();
-
-        $product = Product::find($guestItem->product_id);
-        if (!$product) {
-            continue;
-        }
-        
-        if ($userItem) {
-            $newQuantity = $userItem->quantity + $guestItem->quantity;
-            
-            if ($newQuantity > $product->stock) {
-                $newQuantity = $product->stock;
-            }
-            
-            $userItem->quantity = $newQuantity;
-            $userItem->total_price = $newQuantity * $userItem->unit_price;
-            $userItem->save();
-            $guestItem->delete();
-        } else {
-            $guestItem->cart_id = $userCart->id;
-            $guestItem->save();
-        }
-    }
-
-    CartHelper::calculateCartTotals($userCart);
-    
-    $userCart->expires_at = now()->addDays(7);
-    $userCart->save();
-    
-    $guestCart->delete();
-
-    return response()->json([
-        'message' => 'Panier fusionné avec succès',
-        'status' => 'success',
-        'cart' => $userCart,
-        'items' => $userCart->items,
-        'totals' => CartHelper::getCartTotals($userCart)
-    ], 200);
-}
 
 
 }
