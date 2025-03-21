@@ -9,7 +9,9 @@ use Stripe\Checkout\Session;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Container\Attributes\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
 
 class CheckoutController extends Controller
 {
@@ -96,94 +98,109 @@ class CheckoutController extends Controller
             ], 400);
         }
     }
-    public function success(Request $request)
-    {
-        $sessionId = $request->query('session_id');
-        $orderId = $request->query('order_id');
 
-        if (!$sessionId || !$orderId) {
-            return response()->json(['message' => 'Session ID and Order ID are required'], 400);
-        }
+public function success(Request $request)
+{
+    $sessionId = $request->query('session_id');
+    $orderId = $request->query('order_id');
 
-        Stripe::setApiKey('sk_test_51R41RuHIFvEer26VQ1G7WXYw6e7hszFa6uu15IPwCWK9M3i2w0EP68Z4ATWbFLBYk38R8IsRhbLB7XjWM1hKvzZb00kIn93CPd');
+    if (!$sessionId || !$orderId) {
+        return response()->json(['message' => 'Session ID and Order ID are required'], 400);
+    }
 
-        try {
-            $session = Session::retrieve($sessionId);
+    Stripe::setApiKey('sk_test_51R41RuHIFvEer26VQ1G7WXYw6e7hszFa6uu15IPwCWK9M3i2w0EP68Z4ATWbFLBYk38R8IsRhbLB7XjWM1hKvzZb00kIn93CPd');
 
-            $order = Order::find($orderId);
+    try {
+        $session = Session::retrieve($sessionId);
 
-            if ($order && $order->status === 'pending') {
-                $payment = Payment::where('stripe_session_id', $sessionId)->first();
+        $order = Order::find($orderId);
 
-                if (!$payment) {
-                    // Si le paiement n'est pas trouvé, créons-le
-                    $payment = Payment::create([
-                        'order_id' => $orderId,
-                        'user_id' => Auth::id(),
-                        'stripe_session_id' => $sessionId,
-                        'stripe_payment_intent_id' => $session->payment_intent,
-                        'payment_method' => 'stripe',
-                        'amount' => $session->amount_total / 100, 
-                        'currency' => $session->currency,
-                        'status' => 'completed',
-                        'payment_details' => [
-                            'payment_status' => $session->payment_status,
-                            'completed_at' => now()->toISOString()
-                        ],
-                        'paid_at' => now()
-                    ]);
-                } else {
-                    $payment->update([
-                        'status' => 'completed',
-                        'stripe_payment_intent_id' => $session->payment_intent,
-                        'payment_details' => array_merge($payment->payment_details ?? [], [
-                            'payment_status' => $session->payment_status,
-                            'completed_at' => now()->toISOString()
-                        ]),
-                        'paid_at' => now()
-                    ]);
-                }
+        if ($order && $order->status === 'pending') {
+            $payment = Payment::where('stripe_session_id', $sessionId)->first();
 
-                $order->update(['status' => 'processing']);
+            if (!$payment) {
+                // Si le paiement n'est pas trouvé, créons-le
+                $payment = Payment::create([
+                    'order_id' => $orderId,
+                    'user_id' => Auth::id(),
+                    'stripe_session_id' => $sessionId,
+                    'stripe_payment_intent_id' => $session->payment_intent,
+                    'payment_method' => 'stripe',
+                    'amount' => $session->amount_total / 100, 
+                    'currency' => $session->currency,
+                    'status' => 'completed',
+                    'payment_details' => [
+                        'payment_status' => $session->payment_status,
+                        'completed_at' => now()->toISOString()
+                    ],
+                    'paid_at' => now()
+                ]);
+            } else {
+                $payment->update([
+                    'status' => 'completed',
+                    'stripe_payment_intent_id' => $session->payment_intent,
+                    'payment_details' => array_merge($payment->payment_details ?? [], [
+                        'payment_status' => $session->payment_status,
+                        'completed_at' => now()->toISOString()
+                    ]),
+                    'paid_at' => now()
+                ]);
+            }
 
+            $order->update(['status' => 'processing']);
 
-                if ($order && $order->user_id) {
-                    // Use the order's user_id instead of relying on Auth::id()
-                    Cart::where('user_id', $order->user_id)->delete();
-
-                    return response()->json([
-                        'message' => 'Paiement reussi',
-                        'order_id' => $orderId,
-                        'order_status' => 'processing',
-                        'cart_deleted' => true
-                    ]);
-                } else {
-                    // Log that we couldn't find a user ID to delete the cart
-                    return response()->json('Cannot delete cart: No user ID available', [
-                        'order_id' => $orderId,
-                        'auth_id' => Auth::id(),
-                        'order_user_id' => $order->user_id ?? null
-                    ]);
-
-                    return response()->json([
-                        'message' => 'Paiement reussi',
-                        'order_id' => $orderId,
-                        'order_status' => 'processing'
-                    ]);
+            // Load user information to send email
+            $order->load('user');
+            
+            // Send order confirmation email if user has an email
+            if ($order->user && $order->user->email) {
+                try {
+                    Mail::to($order->user->email)->send(new \App\Mail\OrderConfirmation($order, $payment));
+                } catch (\Exception $e) {
+                    // Log the error but don't prevent the success response
+                    Log::error('Failed to send order confirmation email: ' . $e->getMessage());
                 }
             }
 
-            return response()->json([
-                'message' => 'Le statut du paiement est: ' . $session->payment_status
-            ]);
+            if ($order && $order->user_id) {
+                // Use the order's user_id instead of relying on Auth::id()
+                Cart::where('user_id', $order->user_id)->delete();
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la vérification du paiement',
-                'error' => $e->getMessage()
-            ], 500);
+                return response()->json([
+                    'message' => 'Paiement reussi',
+                    'order_id' => $orderId,
+                    'order_status' => 'processing',
+                    'cart_deleted' => true,
+                    'email_sent' => $order->user && $order->user->email ? true : false
+                ]);
+            } else {
+                // Fix the duplication issue in your original code
+                Log::warning('Cannot delete cart: No user ID available', [
+                    'order_id' => $orderId,
+                    'auth_id' => Auth::id(),
+                    'order_user_id' => $order->user_id ?? null
+                ]);
+
+                return response()->json([
+                    'message' => 'Paiement reussi',
+                    'order_id' => $orderId,
+                    'order_status' => 'processing',
+                    'email_sent' => $order->user && $order->user->email ? true : false
+                ]);
+            }
         }
+
+        return response()->json([
+            'message' => 'Le statut du paiement est: ' . $session->payment_status
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Erreur lors de la vérification du paiement',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function cancel(Request $request)
     {

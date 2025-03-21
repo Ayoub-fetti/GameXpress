@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Api\V1\Admin\DashbordController;
 use App\Http\Controllers\Api\V1\Admin\UserAuthController;
 use App\Http\Controllers\Api\V1\Admin\ProductController;
@@ -73,3 +74,48 @@ Route::prefix('orders')->group(function () {
 Route::get('/login', function () {
     return response()->json(['message' => 'Please login'], 401);
 })->name('login');
+
+
+Route::get('/test-email', function() {
+    // Create a mock Order object
+    $order = new \App\Models\Order();
+    $order->id = 123;
+    $order->subtotal = 150;
+    $order->tax_amount = 15;
+    $order->discount_amount = 0;
+    $order->total_price = 165;
+    $order->status = 'processing';
+    $order->created_at = now();
+    
+    // Create a mock user if needed in your template
+    $user = new \App\Models\User();
+    $user->name = 'Test User';
+    $user->email = 'ayouboumha06@gmail.com';
+    $order->user = $user;
+    
+    // Mock product data that matches your template's expectations
+    $order->products = [
+        [
+            'product_name' => 'Test Product 1',
+            'quantity' => 2,
+            'price' => 55, // Make sure this key exists since your template uses it
+        ],
+        [
+            'product_name' => 'Test Product 2',
+            'quantity' => 1,
+            'price' => 40,
+        ],
+    ];
+    
+    // Create a mock Payment object
+    $payment = new \App\Models\Payment();
+    $payment->amount = 165;
+    $payment->status = 'completed';
+    
+    try {
+        Mail::to('ayouboumha06@gmail.com')->send(new \App\Mail\OrderConfirmation($order, $payment));
+        return 'Email sent!';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' line ' . $e->getLine();
+    }
+});
