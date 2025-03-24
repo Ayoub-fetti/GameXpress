@@ -32,7 +32,7 @@ class Product extends Model
             static::updated(function ($product) {
                 if ($product->stock <= 10) { 
                     $admins = User::role('super_admin')->get(); 
-                    Notification::send($admins, new StockNotification($product));
+                    Notification::send($admins, new  ($product));
                 }
             });
         }
