@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 
+
 Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
 Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
 
@@ -73,3 +74,6 @@ Route::prefix('orders')->group(function () {
 Route::get('/login', function () {
     return response()->json(['message' => 'Please login'], 401);
 })->name('login');
+
+
+Route::get('data', [CategoryController::class , 'data']);

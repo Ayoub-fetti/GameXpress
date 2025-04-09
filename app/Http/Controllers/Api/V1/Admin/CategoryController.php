@@ -13,6 +13,11 @@ class CategoryController extends Controller
     {
         return response()->json(Category::all(),200);
     }
+    public function data()
+    {
+        return response()->json('3data');
+    }
+
 
     /**
      * Show the form for creating a new resource.
