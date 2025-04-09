@@ -74,7 +74,9 @@ class UserAuthController extends Controller
         'user' => [
             'id' => $user->id,
             'name' => $user->name,
-            'email' => $user->email
+            'email' => $user->email,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name')
         ],
         'token' => $token,
         'merge_result' => $sessionId ? 'Fusion du panier tentée' : 'Aucun panier à fusionner'
