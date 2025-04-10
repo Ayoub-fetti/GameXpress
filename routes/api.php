@@ -13,11 +13,20 @@ use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 
 
-Route::post('/v1/admin/register', [UserAuthController::class, 'register']);
-Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
+Route::get('/user', function (Request $request) {
+    return response()->json([
+        'user' => $request->user(),
+        'roles' => $request->user()->getRoleNames()->toArray(),
+        'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray()
+    ]);
+})->middleware('auth:sanctum');
+
+Route::post('/register', [UserAuthController::class, 'register'])->name('register');
+Route::post('/login', [UserAuthController::class, 'login']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/v1/admin/logout', [UserAuthController::class, 'logout']);
+    Route::post('/logout', [UserAuthController::class, 'logout']);
 
 
     Route::middleware('role:super_admin')->group(function () {
@@ -46,7 +55,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('cart')->group(function () {
     Route::get('/products', [CartController::class, 'index']);
-    // Route::post('/add', [CartController::class, 'addToCart']);
     Route::get('/show', [CartController::class, 'getCart']);
     Route::post('/item/update', [CartController::class, 'updateCartItem']);
     Route::delete('/item/remove/{id}', [CartController::class, 'removeCartItem']);
@@ -54,7 +62,6 @@ Route::prefix('cart')->group(function () {
 
 
     Route::middleware('auth:sanctum')->group(function () {
-        // Route::get('/show', [CartController::class, 'getCart']);
         Route::post('/promo_code', [CartController::class, 'applyPromoCode']);
         Route::post('/client/add', [CartController::class, 'addToCartClient']);
         Route::post('/cart/merge', [CartController::class, 'mergeCartAfterLogin']);
@@ -76,4 +83,5 @@ Route::get('/login', function () {
 })->name('login');
 
 
-Route::get('data', [CategoryController::class , 'data']);
+Route::get('data', [CategoryController::class , 'data'])->middleware('auth:sanctum');
+

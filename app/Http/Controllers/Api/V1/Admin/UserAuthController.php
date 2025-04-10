@@ -20,25 +20,32 @@ class UserAuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
-
+        
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
+        
         if (User::count() === 1) {
             $role = Role::findByName('super_admin');
         } else {
             $role = Role::findByName('user');
         }
 
+        $token = $user->createToken('auth-token')->plainTextToken;
+        
         $user->assignRole($role);
 
-        return response()->json(['message' => 'User registered successfully'], 201);
+        return response()->json([
+            'message' => 'Connexion réussie',
+            'user' => $user,
+            'token' => $token
+        ], 200);
+        
     }
 
-    public function login(Request $request)
+public function login(Request $request)
 {
     $request->validate([
         'email' => 'required|string|email',
@@ -54,31 +61,24 @@ class UserAuthController extends Controller
         ], 401);
     }
     
-    // Supprimer les anciens tokens (optionnel)
-    // $user->tokens()->delete();
-    
     $token = $user->createToken('auth-token')->plainTextToken;
     
     $sessionId = $request->header('X-Session-Id');
     $mergeResult = null;
     
-
     if ($sessionId) {
-
         $cartController = new \App\Http\Controllers\Api\V1\CartController();
         $mergeResult = $cartController->mergeGuestCart($sessionId, $user->id);
     }
     
-    return response()->json([
-        'message' => 'Connexion réussie',
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email
-        ],
-        'token' => $token,
-        'merge_result' => $sessionId ? 'Fusion du panier tentée' : 'Aucun panier à fusionner'
-    ], 200);
+    $roles = $user->getRoleNames();
+
+        return response()->json([
+            'message' => 'Connexion réussie',
+            'user' => $user,
+            'roles' => $roles,
+            'token' => $token
+        ], 200);
 }
 
     public function logout(Request $request)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1\admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
@@ -13,9 +14,12 @@ class CategoryController extends Controller
     {
         return response()->json(Category::all(),200);
     }
-    public function data()
-    {
-        return response()->json('3data');
+    public function data(Request $request) {
+        return response()->json([
+            'user' => $request->user(),
+            'roles' => $request->user()->getRoleNames()->toArray(),
+            'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray()
+        ]);
     }
 
 
