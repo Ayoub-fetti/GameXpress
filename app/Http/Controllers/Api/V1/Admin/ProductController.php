@@ -15,9 +15,38 @@ class ProductController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        return response()->json(Product::all(),200);
-    }
+{
+    $products = Product::with('images')->get();
+    
+    $formattedProducts = $products->map(function ($product) {
+        // Get all images for the product
+        $images = $product->images;
+        
+        // Find primary image
+        $primaryImage = $images->where('is_primary', true)->first();
+        
+        // Format other (non-primary) images
+        $otherImages = $images->where('is_primary', false)->values();
+        
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'stock' => $product->stock,
+            'status' => $product->status,
+            'category_id' => $product->category_id,
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
+            'primary_image' => $primaryImage ? url($primaryImage->image_url) : null,
+            'other_images' => $otherImages->map(function ($image) {
+                return url($image->image_url);
+            })->toArray(),
+        ];
+    });
+    
+    return response()->json($formattedProducts, 200);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -82,24 +111,39 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    
     public function update(Request $request, string $id)
     {
         $product = Product::find($id);
         if (!$product) {
-            return response()->json(['message' => 'Produit non trouvé'],404);
+            return response()->json(['message' => 'Produit non trouvé'], 404);
         }
+        
         $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|max:255',
-            'price' => 'sometimes|required|numeric|min:0',
-            'stock' => 'sometimes|required|integer|min:0',
-            'status' => 'sometimes|required|in:available,out_of_stock',
-            'category_id' => 'sometimes|required|exists:categories,id',
-            'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048', // Validation for image
+            'name' => 'sometimes|string|max:255',
+            'slug' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
+            'status' => 'sometimes|in:available,out_of_stock',
+            'category_id' => 'sometimes|exists:categories,id',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        $product->update($request->all());
-
+        
+        $product->update($request->only(['name', 'slug', 'price', 'stock', 'status', 'category_id']));
+    
         if ($request->hasFile('image')) {
+            // Find existing primary image
+            $existingPrimaryImage = ProductImage::where('product_id', $product->id)
+                ->where('is_primary', true)
+                ->first();
+                
+            // If exists, change to non-primary
+            if ($existingPrimaryImage) {
+                $existingPrimaryImage->is_primary = false;
+                $existingPrimaryImage->save();
+            }
+            
+            // Store new image
             $imagePath = $request->file('image')->store('public/product_images');
             $productImage = new ProductImage([
                 'product_id' => $product->id,
@@ -108,8 +152,35 @@ class ProductController extends Controller
             ]);
             $productImage->save();
         }
-        return response()->json(['message' => 'Product created succesfully',
-           'product' => $product], 200);
+        
+        // Reload product with images to include in response
+        $product = Product::with('images')->find($id);
+        
+        // Format response to match your index method
+        $images = $product->images;
+        $primaryImage = $images->where('is_primary', true)->first();
+        $otherImages = $images->where('is_primary', false)->values();
+        
+        $formattedProduct = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'stock' => $product->stock,
+            'status' => $product->status,
+            'category_id' => $product->category_id,
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
+            'primary_image' => $primaryImage ? url($primaryImage->image_url) : null,
+            'other_images' => $otherImages->map(function ($image) {
+                return url($image->image_url);
+            })->toArray(),
+        ];
+        
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => $formattedProduct
+        ], 200);
     }
 
     /**
