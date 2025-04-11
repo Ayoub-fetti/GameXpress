@@ -6,8 +6,9 @@ use App\Notifications\StockNotification;
 use Illuminate\Support\Facades\Notification;
 
 use App\Models\User;
-use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Category;
+use App\Models\ProductImage;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -24,6 +25,9 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    public function images(){
+        return $this->hasMany(ProductImage::class);
+    }
     
     protected static function boot()
         {
@@ -36,6 +40,8 @@ class Product extends Model
                 }
             });
         }
+
+    
 
 
 }

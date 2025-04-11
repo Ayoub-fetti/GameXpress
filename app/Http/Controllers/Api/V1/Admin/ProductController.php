@@ -64,9 +64,9 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::find($id);
+        $product = Product::with('images')->find($id);
         if (!$product) {
-            return response()->json($product,200);
+            return response()->json(['message' => 'Produit non trouvé'], 404);
         }
         return response()->json($product, 200);
     }
