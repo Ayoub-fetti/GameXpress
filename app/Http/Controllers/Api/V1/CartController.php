@@ -45,10 +45,11 @@ class CartController extends Controller
          * )
          */
 
-    public function index()
-    {
-        return response()->json(Product::all(),200);
-    }
+         public function index()
+         {
+             $products = Product::with('images')->get();
+             return response()->json($products, 200);
+         }
 
         /**
          * @OA\Post(
