@@ -70,6 +70,7 @@ public function updateOrderStatus(Request $request, $orderId): JsonResponse
         'message' => 'Order status updated successfully',
         'order' => $order,
     ]);
+
 }
 
 }

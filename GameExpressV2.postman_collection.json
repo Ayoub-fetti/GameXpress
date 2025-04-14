@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "d0df6a34-b64c-44c3-b572-a3f63ec56d85",
-		"name": "GameExpress",
+		"_postman_id": "e8b0f694-ea33-4bfa-8061-453588cbb21c",
+		"name": "GameExpressV2",
 		"description": "> Prototyping your API in Postman streamlines the development process by enabling you to design and test front- and back-end API-driven functionalities within a shared workspace. \n  \n\n## **🪐 Get started**\n\nThis collection serves as a place for teams from the Intergalactic Bank to collaborate on the design of the soon-to-be-developed Intergalactic Bank API. This prototype collection outlines how the service's requests and responses should function. Stakeholders should provide their thoughts and suggestions before we begin development.\n\n## **🧑‍💻 Setting up a mock server**\n\n<img src=\"https://lh7-us.googleusercontent.com/eNxPYjGNGALmKSzZvdhlMuy_XK3C_iQ3rK7tCDiPvr6nePMyggp9NTIAjcZYs7oIy8PU_NCGFKtcBPRZrfplfPyrKsO5SCMRX6OuBpzsL_HuOHxW2DwA3FH2-o0uFJgAZOr7JaQTiIvkayUSrPdsxQQ\">\n\nThis collection is meant to be used alongside a [<b>Postman Mock Server</b>](https://learning.postman.com/docs/designing-and-developing-your-api/mocking-data/setting-up-mock/)**.** Since we are still in the planning phase of the API, we have included several example responses for each request, laying out how we think each possible response will look. Including these example responses also has the added benefit of powering a mock server. By following the instructions, you can set up your own mock server and simulate the behavior of this API by returning the predefined data.\n\n**To set up a mock server:**\n\n1. Select **Mock collection** from the collection's actions menu.\n2. On the **Create a mock server** page, add a name for your mock server, and select to **Save the mock server URL as a new environment variable.** This will create a new environment with the mock’s URL pre-populated.\n3. Select the **New Environment** from the **Environment** dropdown list.\n4. Complete the process by clicking **Create Mock Server**.\n5. Send the request! You should now see that the `{{url}}` variable is using the mock server you set up previously.\n6. Try editing fields in the mocked responses to see your changes reflected in the mock server.\n    \n\n## **🤔Why include tests?**\n\nEach request in the collection includes tests to check the response structure. These tests check that all of the properties that other systems rely on are present and of the expected data type. Once you have the fully built-out service in place, you can swap the mock server URL for the live URL and test that your implementation follows the same guidelines as your prototype. This gives you confidence that you can start integrating this service into your systems.\n\nIf you are adding a new proposed endpoint for this request, try asking Postbot to generate tests for it.\n\n## **🤝Collaborate with us!**\n\nThe Bank Services team wants your team’s input on our API design. Add an [inline comment](https://learning.postman.com/docs/collaborating-in-postman/working-with-your-team/discussing-your-work/) to this collection with your ideas, questions, and suggestions, or reach out to us on our internal Slack by tagging `@bank-services`.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "42979000",
-		"_collection_link": "https://ayoubs-team.postman.co/workspace/YoucodeWork~18d36c0d-63af-4593-a459-22c3fba58201/collection/42979000-d0df6a34-b64c-44c3-b572-a3f63ec56d85?action=share&source=collection_link&creator=42979000"
+		"_exporter_id": "43165044",
+		"_collection_link": "https://gamexpress.postman.co/workspace/GameXpress-Workspace~95de3080-59c2-414b-8415-333b89430499/collection/43165044-e8b0f694-ea33-4bfa-8061-453588cbb21c?action=share&source=collection_link&creator=43165044"
 	},
 	"item": [
 		{
@@ -45,24 +45,46 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Session-Id",
+								"value": "r4CTmWi4vOCYmYqj02ViXyKB8lw2k9iZ",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "formdata",
 							"formdata": [
 								{
 									"key": "email",
-									"value": "admin@example.com",
+									"value": "admin@gmail.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
 									"value": "test1234",
 									"type": "text"
+								},
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
 								}
 							]
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/login",
+							"raw": "http://127.0.0.1:8000/api/login",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -73,8 +95,6 @@
 							"port": "8000",
 							"path": [
 								"api",
-								"v1",
-								"admin",
 								"login"
 							],
 							"query": [
@@ -312,10 +332,10 @@
 									]
 								}
 							},
-							"_postman_previewlanguage": null,
-							"header": null,
+							"_postman_previewlanguage": "Text",
+							"header": [],
 							"cookie": [],
-							"body": null
+							"body": ""
 						}
 					]
 				},
@@ -338,6 +358,9 @@
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
 					"request": {
 						"method": "POST",
 						"header": [
@@ -345,11 +368,16 @@
 								"key": "Accept",
 								"value": "application/json",
 								"type": "text"
+							},
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "eyJpdiI6IjFQRDU1cnVNbi9GV3Roc010ZjZEK3c9PSIsInZhbHVlIjoiRmkxU0ZNQUhwNU5Na0JuVE5TbkhJc1Z5emVxeE5jek5vZmtPUVhyODAvNTFsb09CWTBqTVVGb3M3ZEhsMGh1NmhuUElscWRicnh5ODVRM2MwRWlISko4bEZlTXNNcDdlVzg2MU1xWGJLNklXSWVNeGl0Nk9HQnYzZ3VnMkkvdnMiLCJtYWMiOiJhMDZiNjkwOTcyMTMwYWZiODE4OGIyM2NjZjQyYzU3OTJkNTBlOTQ1NDI2ZmZhYjM1YmIxZWQ4NGUyMTMwYjY3IiwidGFnIjoiIn0=",
+								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\" : \"ayoub\",\r\n    \"email\": \"test@gmail.com\",\r\n    \"password\": \"test1234\",\r\n    \"password_confirmation\" : \"test1234\"\r\n}",
+							"raw": "{\r\n    \"name\" : \"admin\",\r\n    \"email\": \"admin@gmail.com\",\r\n    \"password\": \"test1234\",\r\n    \"password_confirmation\" : \"test1234\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -357,7 +385,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/register",
+							"raw": "http://127.0.0.1:8000/api/register",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -368,8 +396,6 @@
 							"port": "8000",
 							"path": [
 								"api",
-								"v1",
-								"admin",
 								"register"
 							]
 						},
@@ -562,7 +588,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "axjCX6jCmYTyxCcGP84fA5O3YMAwImfKM3hcRVuAe4f6dab0",
+									"value": "UjGBeETkLpYc5UAtKz1OxBt56svyMOfFNWOeJN3y34b14d53",
 									"type": "string"
 								}
 							]
@@ -575,17 +601,8 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"fromAccountId\" : 28,\n    \"toAccountId\" : 27,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/logout",
+							"raw": "http://127.0.0.1:8000/api/logout",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -596,216 +613,7 @@
 							"port": "8000",
 							"path": [
 								"api",
-								"v1",
-								"admin",
 								"logout"
-							]
-						},
-						"description": "This endpoint will create a new transaction. Funds will be transferred between accounts by providing two account IDs in the `fromAccountId` and `toAccountId` fields.\n\n### Important!\n\nTransactions cannot be edited once created, so use this endpoint with caution."
-					},
-					"response": [
-						{
-							"name": "Successful Response",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"fromAccountId\" : 28,\n    \"toAccountId\" : 27,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{url}}/api/v1/transactions",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"transactions"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json",
-									"name": "Content-Type",
-									"description": "",
-									"type": "text"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"success\": true,\n    \"transaction\": {\n        \"id\": 8\n    }\n}"
-						},
-						{
-							"name": "Insufficient funds",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"fromAccountId\" : 17,\n    \"toAccountId\" : 19,\n    \"amount\" : 1000000000000000000000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{url}}/api/v1/transactions",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"transactions"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Date",
-									"value": "Sat, 17 Feb 2024 13:16:53 GMT"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Content-Length",
-									"value": "101"
-								},
-								{
-									"key": "Connection",
-									"value": "keep-alive"
-								},
-								{
-									"key": "uWebSockets",
-									"value": "20"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"name\": \"invalidBody\",\n    \"message\": \"Insufficient balance in fromAccountId to initiate the transaction.\"\n}"
-						},
-						{
-							"name": "Forbidden",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"fromAccountId\" : 1,\n    \"toAccountId\" : 2,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{url}}/api/v1/transactions",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"transactions"
-									]
-								}
-							},
-							"status": "Forbidden",
-							"code": 403,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json",
-									"name": "Content-Type",
-									"description": "",
-									"type": "text"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"name\": \"invalidAuth\",\n    \"message\": \"Please provide a valid API key in the header of the request.\"\n}"
-						}
-					]
-				},
-				{
-					"name": "Dashbord",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var responseJSON = pm.response.json();",
-									"",
-									"// Test the response body structure and values",
-									"pm.test(\"Response body structure is valid\", function () {",
-									"    pm.expect(responseJSON).to.be.an('object').that.has.property('success', true);",
-									"    pm.expect(responseJSON).to.have.property('transaction').that.is.an('object').and.has.property('id');",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "2LKrwK0lBhWlmjhsh4YHDPjGhhuvIP4IaPlY0fBJ6e759cf9",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"fromAccountId\" : 28,\n    \"toAccountId\" : 27,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/dashboard",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"dashboard"
 							]
 						},
 						"description": "This endpoint will create a new transaction. Funds will be transferred between accounts by providing two account IDs in the `fromAccountId` and `toAccountId` fields.\n\n### Important!\n\nTransactions cannot be edited once created, so use this endpoint with caution."
@@ -988,7 +796,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "6dV3TnjmISZvehw1fynoJwFMp1DXvNO4pJfa1m5Z7c755775",
+									"value": "4|SldMZqMWncP77FJpm8ftrNe8StFipnWKHATyVR3I8f012937",
 									"type": "string"
 								}
 							]
@@ -1221,7 +1029,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "6dV3TnjmISZvehw1fynoJwFMp1DXvNO4pJfa1m5Z7c755775",
+									"value": "1Lq8QvfRaAAOQsk5cKCIfnYJX4UUg852wP3rRYRKb0bff80d",
 									"type": "string"
 								}
 							]
@@ -1229,7 +1037,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/products/10",
+							"raw": "http://127.0.0.1:8000/api/v1/admin/products/1",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1243,7 +1051,7 @@
 								"v1",
 								"admin",
 								"products",
-								"10"
+								"1"
 							]
 						},
 						"description": "This endpoint will retrieve information about an account by passing the account `id` as a path parameter."
@@ -1442,7 +1250,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "kuXIfMLESvq9h2ueWRsHxGP8V6VAfxAo1ycGz3C63cfed7d7",
+									"value": "1Lq8QvfRaAAOQsk5cKCIfnYJX4UUg852wP3rRYRKb0bff80d",
 									"type": "string"
 								}
 							]
@@ -1460,7 +1268,7 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "test",
+									"value": "Pes 2025",
 									"type": "text"
 								},
 								{
@@ -1470,7 +1278,7 @@
 								},
 								{
 									"key": "slug",
-									"value": "test123",
+									"value": "p25",
 									"type": "text"
 								},
 								{
@@ -1491,7 +1299,268 @@
 								{
 									"key": "image",
 									"type": "file",
-									"src": "/C:/Users/LENOVO/Downloads/Taylor_Otwell.jpg"
+									"src": "postman-cloud:///1efff526-07b7-4700-88f8-c7c4e64f257d"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/admin/products",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"products"
+							]
+						},
+						"description": "This endpoint will update information about an account by passing the `accountId` as a path parameter and additional information through the Request Body.\n\n### Request Body Properties\n\n| **Property Name** | **Data Type** | **Description** | **Required?** |\n| --- | --- | --- | --- |\n| owner | String | Full Name | Yes |\n\n### Important!\n\nOnly Bank Admins have permission to update an account. You may encounter a `403 Forbidden Error` if you try to update an account without the correct permissions."
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"owner\":\"4\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/v1/accounts/:id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"name": "Content-Type",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"account\": {\n        \"id\": \"2\",\n        \"owner\" : \"Nova Newman\",\n        \"balance\" : 300,\n        \"currency\" : \"COSMIC_COINS\",\n        \"createdAt\" : \"2024-01-10T14:54:29.739Z\"\n    }\n}"
+						},
+						{
+							"name": "Not found",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/v1/accounts/:id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "999"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 17 Feb 2024 13:18:51 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "63"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "uWebSockets",
+									"value": "20"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"instanceNotFound\",\n    \"message\": \"Account does not exist.\"\n}"
+						},
+						{
+							"name": "Forbidden",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/api/v1/accounts/:id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"accounts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "22"
+										}
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 17 Feb 2024 13:21:35 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "95"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "uWebSockets",
+									"value": "20"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"invalidAuth\",\n    \"message\": \"Please provide a valid API key in the header of the request.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Store Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test to check the structure of the successful response",
+									"pm.test(\"Successful response has the correct structure\", function () {",
+									"    var responseData = pm.response.json();",
+									"",
+									"    // Check if the response contains the account object",
+									"    pm.expect(responseData).to.have.property('account');",
+									"    pm.expect(responseData.account).to.be.an('object');",
+									"",
+									"    // Check the properties of the account object",
+									"    pm.expect(responseData.account).to.have.property('id');",
+									"    pm.expect(responseData.account).to.have.property('owner');",
+									"    pm.expect(responseData.account).to.have.property('balance');",
+									"    pm.expect(responseData.account).to.have.property('currency');",
+									"    pm.expect(responseData.account).to.have.property('createdAt');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "1Lq8QvfRaAAOQsk5cKCIfnYJX4UUg852wP3rRYRKb0bff80d",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Pes 2025",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "100",
+									"type": "text"
+								},
+								{
+									"key": "slug",
+									"value": "p25",
+									"type": "text"
+								},
+								{
+									"key": "stock",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "status",
+									"value": "available",
+									"type": "text"
+								},
+								{
+									"key": "category_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1efff526-07b7-4700-88f8-c7c4e64f257d"
 								}
 							]
 						},
@@ -1694,7 +1763,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "6dV3TnjmISZvehw1fynoJwFMp1DXvNO4pJfa1m5Z7c755775",
+									"value": "LaHa0A9rAX0OfIofK1qiVFsxBnr09AmzmHw0fURVffff9fe3",
 									"type": "string"
 								}
 							]
@@ -1709,7 +1778,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Counter-Strike\",\r\n    \"slug\": \"CS2025\",\r\n    \"price\": 49.99,\r\n    \"stock\": 50,\r\n    \"status\": \"available\",\r\n    \"category_id\": 1\r\n}",
+							"raw": "{\r\n    \"name\": \"Counter-Strike\",\r\n    \"slug\": \"CS2025\",\r\n    \"price\": 49.99,\r\n    \"stock\": 5,\r\n    \"status\": \"available\",\r\n    \"category_id\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1717,7 +1786,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/products/10",
+							"raw": "http://127.0.0.1:8000/api/v1/admin/products/2",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1731,7 +1800,7 @@
 								"v1",
 								"admin",
 								"products",
-								"10"
+								"2"
 							]
 						},
 						"description": "This endpoint will delete an account by passing in the account `id` as a path parameter.\n\n### Important!\n\nOnce an account is deleted, it cannot be restored, so please use this endpoint with caution.\n\nAdditionally, only bank admins have permission to update an account. You may encounter a `403 Forbidden` error if you try to update an account without the correct permissions."
@@ -1764,9 +1833,9 @@
 							"status": "No Content",
 							"code": 204,
 							"_postman_previewlanguage": "Text",
-							"header": null,
+							"header": [],
 							"cookie": [],
-							"body": null
+							"body": ""
 						},
 						{
 							"name": "Not found",
@@ -2038,7 +2107,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "RA4JcdD1H0TTfqdjonJUEld4R1aiKundkRQShqWP344be315",
+									"value": "LaHa0A9rAX0OfIofK1qiVFsxBnr09AmzmHw0fURVffff9fe3",
 									"type": "string"
 								}
 							]
@@ -2250,6 +2319,16 @@
 				{
 					"name": "List",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "LaHa0A9rAX0OfIofK1qiVFsxBnr09AmzmHw0fURVffff9fe3",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -2275,8 +2354,44 @@
 				{
 					"name": "Store",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "nn4CaOoWLHo55jv6P7qsGjzUwJ9KQcRVJgrhP0Dm4327cb7a",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "test test",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "test@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test1234",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
 							"raw": "http://127.0.0.1:8000/api/v1/admin/users",
 							"protocol": "http",
@@ -2300,10 +2415,46 @@
 				{
 					"name": "Update",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "nn4CaOoWLHo55jv6P7qsGjzUwJ9KQcRVJgrhP0Dm4327cb7a",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "test test",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "test1@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test1234",
+									"type": "text"
+								}
+							]
+						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/users/{id}",
+							"raw": "http://127.0.0.1:8000/api/v1/admin/users/2",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2317,7 +2468,7 @@
 								"v1",
 								"admin",
 								"users",
-								"{id}"
+								"2"
 							]
 						}
 					},
@@ -2326,10 +2477,20 @@
 				{
 					"name": "Delete",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "nn4CaOoWLHo55jv6P7qsGjzUwJ9KQcRVJgrhP0Dm4327cb7a",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/admin/users/{id}",
+							"raw": "http://127.0.0.1:8000/api/v1/admin/users/2",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2343,13 +2504,1032 @@
 								"v1",
 								"admin",
 								"users",
-								"{id}"
+								"2"
 							]
 						}
 					},
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Dashbord",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON = pm.response.json();",
+									"",
+									"// Test the response body structure and values",
+									"pm.test(\"Response body structure is valid\", function () {",
+									"    pm.expect(responseJSON).to.be.an('object').that.has.property('success', true);",
+									"    pm.expect(responseJSON).to.have.property('transaction').that.is.an('object').and.has.property('id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "iytGgyXiXLt5AqbkEsd4mPUnJ0yavgKi80AC5awv2a286201",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/admin/dashboard",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"dashboard"
+							]
+						},
+						"description": "This endpoint will create a new transaction. Funds will be transferred between accounts by providing two account IDs in the `fromAccountId` and `toAccountId` fields.\n\n### Important!\n\nTransactions cannot be edited once created, so use this endpoint with caution."
+					},
+					"response": [
+						{
+							"name": "Successful Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fromAccountId\" : 28,\n    \"toAccountId\" : 27,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/v1/transactions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"transactions"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"name": "Content-Type",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"transaction\": {\n        \"id\": 8\n    }\n}"
+						},
+						{
+							"name": "Insufficient funds",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fromAccountId\" : 17,\n    \"toAccountId\" : 19,\n    \"amount\" : 1000000000000000000000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/v1/transactions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"transactions"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 17 Feb 2024 13:16:53 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "101"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "uWebSockets",
+									"value": "20"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"invalidBody\",\n    \"message\": \"Insufficient balance in fromAccountId to initiate the transaction.\"\n}"
+						},
+						{
+							"name": "Forbidden",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"fromAccountId\" : 1,\n    \"toAccountId\" : 2,\n    \"amount\" : 1000,\n    \"currency\" : \"COSMIC_COINS\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/v1/transactions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"transactions"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"name": "Content-Type",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"name\": \"invalidAuth\",\n    \"message\": \"Please provide a valid API key in the header of the request.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "AssignRole",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "YRI238SfC9js4C4ffJ7wrAmzRa2A8KDrZG6kTY2T9374578f",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "roles[]",
+									"value": "user",
+									"type": "text"
+								},
+								{
+									"key": "permissions[view_dashboard]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[view_products]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[create_products]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[edit_products]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[delete_products]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[view_categories]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[create_categories]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[edit_categories]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[delete_categories]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[view_users]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[create_users]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[edit_users]",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "permissions[delete_users]",
+									"value": "0",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/admin/users/4/assign-roles-permissions",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"4",
+								"assign-roles-permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "X6pIJ24BB3MWkz3fmiULys0w8jSFG7RXRHcQkIMg69acbcd7",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/admin/transactions",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "X6pIJ24BB3MWkz3fmiULys0w8jSFG7RXRHcQkIMg69acbcd7",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": \"shipped\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/admin/orders/4",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "index",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "M3vg9T0pWGfhC2DWoo7Xbk5NXVxvV9R9PbzJlwnPb3faac3b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/products",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddToCart-guest",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "promo_code",
+									"value": "code1",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/guest/add",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"guest",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CodePromo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "GNhHNFIXDBOpjahOBrM0oNBZOgZoBYBP9KYk0Sk3331a96de",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "ZPNOcwJJZtOceKRihtpbbQEqlpURMjqr",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "3",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "code",
+									"value": "code2",
+									"type": "text"
+								},
+								{
+									"key": "cart_id",
+									"value": "6",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/promo_code",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"promo_code"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddToCart-client",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "GNhHNFIXDBOpjahOBrM0oNBZOgZoBYBP9KYk0Sk3331a96de",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "10",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/client/add",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"client",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "merge Cart After Login (test)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "3abDFntvOACrhAf53FnT2BaB81lCoS0gVhVTP5Zg851a0b12",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "gCm9V4RtDIDKl5B6BPh5BN5S6TCgC1I2",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "22",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/cart/merge",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"cart",
+								"merge"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show_cart",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "FJdY3IdSXF2zrSL6fAnWmV55gmZ0cYc7e8DfKLBN14c2371b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "r4CTmWi4vOCYmYqj02ViXyKB8lw2k9iZ",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "20",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/show",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"show"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "GNhHNFIXDBOpjahOBrM0oNBZOgZoBYBP9KYk0Sk3331a96de",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "9aZESkDWB1K0iIU2Cucffi1stVtkdUoM",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "20",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "order-id",
+									"value": "12",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/payments",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send_order",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "GNhHNFIXDBOpjahOBrM0oNBZOgZoBYBP9KYk0Sk3331a96de",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "hHLgoHfyT2rpRbYMWYyD6q95YZyIBr6f",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "product_id",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "20",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/orders/sentorder",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"orders",
+								"sentorder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update_item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "M3vg9T0pWGfhC2DWoo7Xbk5NXVxvV9R9PbzJlwnPb3faac3b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "7lWYb2WqT3TeScVYf6UGwkn6ouAYdL9G",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cart_item_id",
+									"value": "14",
+									"type": "text"
+								},
+								{
+									"key": "quantity",
+									"value": "30",
+									"type": "text"
+								},
+								{
+									"key": "_method",
+									"value": "put",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/item/update",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"item",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove_item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "M3vg9T0pWGfhC2DWoo7Xbk5NXVxvV9R9PbzJlwnPb3faac3b",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Session-Id",
+								"value": "7lWYb2WqT3TeScVYf6UGwkn6ouAYdL9G",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/cart/item/remove/{id}",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"cart",
+								"item",
+								"remove",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "test send email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/test-email",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"test-email"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "RA4JcdD1H0TTfqdjonJUEld4R1aiKundkRQShqWP344be315",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/admin/categories/4",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"categories",
+						"4"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
