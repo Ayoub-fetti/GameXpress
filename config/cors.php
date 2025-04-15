@@ -9,3 +9,4 @@
         'max_age' => 0,
         'supports_credentials' => true, 
     ];
+    //comment out the above line to disable CORS
