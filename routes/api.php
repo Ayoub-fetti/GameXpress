@@ -50,8 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/v1/admin/users/{id}', [UserController::class, 'destroy']);
     });
     Route::middleware('role:product_manager|super_admin')->prefix('v1/admin')->group(function () {
-        Route::apiResource('products', ProductController::class)->except(['show']);
-        Route::apiResource('v1/admin/categories', CategoryController::class)->except(['show']);
+        Route::apiResource('/products', ProductController::class)->except(['show']);
+        Route::apiResource('/categories', CategoryController::class)->except(['show']);
     });
 });
 

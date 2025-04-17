@@ -218,10 +218,9 @@ class CartController extends Controller
     {
         if (Auth::guard('sanctum')->check()) {
             $cart = Cart::with('items.product')->where('user_id', Auth::guard('sanctum')->id())->first();
-            // dd(Auth::guard('sanctum')->id());
         } else {
             $sessionId = $request->header('X-Session-Id');
-            // dd($sessionId);
+            
             if (!$sessionId) {
                 return response()->json([
                     'message' => 'Session ID is required',
