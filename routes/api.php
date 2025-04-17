@@ -24,8 +24,8 @@ Route::get('/user', function (Request $request) {
     ]);
 })->middleware('auth:sanctum');
 
-Route::post('/register', [UserAuthController::class, 'register'])->name('register');
-Route::post('/login', [UserAuthController::class, 'login']);
+Route::post('/v1/admin/register', [UserAuthController::class, 'register'])->name('register');
+Route::post('/v1/admin/login', [UserAuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserAuthController::class, 'logout']);
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::middleware('role:product_manager|super_admin')->prefix('v1/admin')->group(function () {
         Route::apiResource('products', ProductController::class)->except(['show']);
-        Route::apiResource('v1/admin/categories', CategoryController::class)->except(['show']);
+        Route::apiResource('categories', CategoryController::class)->except(['show']);
     });
 });
 

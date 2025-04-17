@@ -17,7 +17,18 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::with('images')->get();
-        return response()->json($products, 200);
+        
+        // Transform products to ensure image URLs are properly formatted
+        $formattedProducts = $products->map(function ($product) {
+            $product->images = $product->images->map(function ($image) {
+                // Ensure image URL is fully qualified for frontend display
+                $image->image_url = asset($image->image_url);
+                return $image;
+            });
+            return $product;
+        });
+        
+        return response()->json($formattedProducts, 200);
     }
 
     /**
