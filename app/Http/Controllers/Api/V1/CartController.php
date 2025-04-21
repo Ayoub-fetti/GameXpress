@@ -215,33 +215,33 @@ class CartController extends Controller
      * )
      */
     public function getCart(Request $request): JsonResponse
-    {
-        if (Auth::guard('sanctum')->check()) {
-            $cart = Cart::with('items.product')->where('user_id', Auth::guard('sanctum')->id())->first();
-            // dd(Auth::guard('sanctum')->id());
-        } else {
-            $sessionId = $request->header('X-Session-Id');
-            // dd($sessionId);
-            if (!$sessionId) {
-                return response()->json([
-                    'message' => 'Session ID is required',
-                ], 400);
-            }
-            $cart = Cart::with('items.product')->where('session_id', $sessionId)->first();
-        }
-
-        if (!$cart) {
+{
+    if (Auth::guard('sanctum')->check()) {
+        $cart = Cart::with(['items.product.images'])->where('user_id', Auth::guard('sanctum')->id())->first();
+        // dd(Auth::guard('sanctum')->id());
+    } else {
+        $sessionId = $request->header('X-Session-Id');
+        // dd($sessionId);
+        if (!$sessionId) {
             return response()->json([
-                'message' => 'Cart not found',
-            ], 404);
+                'message' => 'Session ID is required',
+            ], 400);
         }
-
-        return response()->json([
-            'cart' => $cart,
-            'items' => $cart->items,
-            'totals' => CartHelper::getCartTotals($cart)
-        ], 200);
+        $cart = Cart::with(['items.product.images'])->where('session_id', $sessionId)->first();
     }
+
+    if (!$cart) {
+        return response()->json([
+            'message' => 'Cart not found',
+        ], 404);
+    }
+
+    return response()->json([
+        'cart' => $cart,
+        'items' => $cart->items,
+        'totals' => CartHelper::getCartTotals($cart)
+    ], 200);
+}
     /**
      * @OA\Post(
      *     path="/promo_code",

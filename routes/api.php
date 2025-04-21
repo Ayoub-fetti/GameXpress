@@ -49,13 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/v1/admin/users/{id}', [UserController::class, 'update']);
         Route::delete('/v1/admin/users/{id}', [UserController::class, 'destroy']);
     });
-    Route::middleware('role:product_manager|super_admin')->prefix('v1/admin')->group(function () {
+    Route::middleware('role:product_manager|super_admin|user')->prefix('v1/admin')->group(function () {
         Route::apiResource('products', ProductController::class)->except(['show']);
         Route::apiResource('categories', CategoryController::class)->except(['show']);
     });
 });
 
-Route::prefix('cart')->group(function () {
+Route::prefix('v1/cart')->group(function () {
     Route::get('/products', [CartController::class, 'index']);
     Route::get('/show', [CartController::class, 'getCart']);
     Route::post('/item/update', [CartController::class, 'updateCartItem']);
