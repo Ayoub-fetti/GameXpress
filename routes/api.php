@@ -13,7 +13,9 @@ use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\CheckoutController;
 
 Route::get('v1/admin/products/{product}', [ProductController::class, 'show']);
+Route::get('v1/admin/products', [ProductController::class, 'index']);
 Route::get('v1/admin/categories/{id}', [CategoryController::class, 'show']);
+Route::get('v1/admin/categories', [CategoryController::class, 'index']);
 
 
 Route::get('/user', function (Request $request) {
@@ -50,8 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/v1/admin/users/{id}', [UserController::class, 'destroy']);
     });
     Route::middleware('role:product_manager|super_admin|user')->prefix('v1/admin')->group(function () {
-        Route::apiResource('products', ProductController::class)->except(['show']);
-        Route::apiResource('categories', CategoryController::class)->except(['show']);
+        Route::apiResource('products', ProductController::class)->except(['index']);
+        Route::apiResource('categories', CategoryController::class)->except(['index']);
     });
 });
 
